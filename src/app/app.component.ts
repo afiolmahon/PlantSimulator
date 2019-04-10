@@ -1,5 +1,6 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
+import { Plant } from './Plant';
 
 @Component({
   selector: 'app-root',
@@ -11,16 +12,16 @@ export class AppComponent {
   @ViewChild('canvas') private canvasRef: ElementRef;
 
   private renderer: THREE.WebGLRenderer;
+  // 3D components
   private scene: THREE.Scene;
-  
-  private testCube: THREE.Mesh;
+  private p: Plant;
   private t: number = 0; // animation timer/
 
   private camera : THREE.PerspectiveCamera;
   title = 'PlantSimulator';
 
   constructor() {
-    this.testCube = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshBasicMaterial({ color: 0x457a45 }));
+    this.p = new Plant();
   }
 
   ngOnInit() {
@@ -38,20 +39,19 @@ export class AppComponent {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
-    this.scene.add(this.testCube);
+    this.scene.add(this.p.model);
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
-
-  // onWindowResize(_: Event) {
+// onWindowResize(_: Event) {
 //   this.cameraControl.camera.aspect = this.getAspectRatio();
 //   this.renderer.setSize(window.innerWidth, window.innerHeight);
 //   this.cameraControl.updateCamera();
 // }
 
   private animate() {
-    this.testCube.position.setZ(2 * Math.sin(this.t));
-    this.t += 0.03;
+    this.p.animate();
+
   }
 
   private startRenderingLoop() {
