@@ -1,6 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { Plant } from './Plant';
+import { CameraController } from './CameraController';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ export class AppComponent {
   private p: Plant;
   private t: number = 0; // animation timer/
 
-  private camera : THREE.PerspectiveCamera;
+  private cameraControl: CameraController;
   title = 'PlantSimulator';
 
   constructor() {
@@ -43,11 +44,12 @@ export class AppComponent {
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
-// onWindowResize(_: Event) {
-//   this.cameraControl.camera.aspect = this.getAspectRatio();
-//   this.renderer.setSize(window.innerWidth, window.innerHeight);
-//   this.cameraControl.updateCamera();
-// }
+  
+  onWindowResize(_: Event) {
+    this.cameraControl.camera.aspect = this.getAspectRatio();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.cameraControl.updateCamera();
+  }
 
   private animate() {
     this.p.animate();

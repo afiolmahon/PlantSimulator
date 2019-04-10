@@ -1,4 +1,7 @@
 <!--The content below is only a placeholder and can be replaced.-->
-<canvas #canvas ></canvas>
-
+<div (window:resize)="onWindowResize($event)" (mousedown)="inputHandler.onMouseDown($event)" (mousemove)="inputHandler.onMouseMove($event)"
+    (mouseup)="inputHandler.onMouseUp($event)" (wheel)="onScroll($event)">
+    <canvas #canvas (touchstart)="th.onTouchStart($event)" (touchmove)="th.onTouchMove($event)"
+(touchend)="th.onTouchEnd($event)"></canvas>
+</div>
 <router-outlet></router-outlet>
