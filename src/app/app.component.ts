@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
-import { Plant } from './Plant';
-import { CameraController } from './CameraController';
+import { PlantNode, createRootPlantNode, addBranchChildNode } from './Plant';
+import { PerspectiveCamera, Mesh, PlaneBufferGeometry, MeshBasicMaterial } from 'three';
 
 @Component({
   selector: 'app-root',
@@ -15,14 +15,16 @@ export class AppComponent {
   private renderer: THREE.WebGLRenderer;
   // 3D components
   private scene: THREE.Scene;
-  private p: Plant;
+  private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshBasicMaterial({color: 0x994C00}));
+  private p: PlantNode;
   private t: number = 0; // animation timer/
 
-  private cameraControl: CameraController;
+  private camera: PerspectiveCamera;
+
   title = 'PlantSimulator';
 
   constructor() {
-    this.p = new Plant();
+    this.p = createRootPlantNode(2);
   }
 
   ngOnInit() {
@@ -34,26 +36,27 @@ export class AppComponent {
 
   private createScene() {
     this.camera = new THREE.PerspectiveCamera(40, this.getAspectRatio(), 1, 1000);
-    this.camera.position.setY(-10);
-    this.camera.position.setZ(10);
+    this.camera.position.set( 0, -40, 40 );
     this.camera.rotateX(Math.PI/4)
     this.scene = new THREE.Scene();
+    this.scene.add(this.floor);
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
-    this.scene.add(this.p.model);
+    this.p.growBranch();
+    addBranchChildNode(this.p.children[0]);
+    this.scene.add(this.p.mesh);
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
   
   onWindowResize(_: Event) {
-    this.cameraControl.camera.aspect = this.getAspectRatio();
+    this.camera.aspect = this.getAspectRatio();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.cameraControl.updateCamera();
+    this.camera.updateProjectionMatrix();
   }
 
   private animate() {
     this.p.animate();
-
   }
 
   private startRenderingLoop() {
