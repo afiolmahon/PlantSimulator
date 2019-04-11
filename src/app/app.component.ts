@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { PlantNode, createRootPlantNode, addBranchChildNode } from './Plant';
 import { PerspectiveCamera, Mesh, PlaneBufferGeometry, MeshBasicMaterial, PointLight } from 'three';
 import { AmbientLight } from 'three';
+import { MeshLambertMaterial } from 'three';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,7 @@ export class AppComponent {
   private scene: THREE.Scene;
   pointLight = new PointLight(0xAA8888);
 
-  private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshBasicMaterial({color: 0x994C00}));
+  private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshLambertMaterial({color: 0x994C00}));
   private p: PlantNode;
   private t: number = 0; // animation timer/
 
@@ -41,7 +42,7 @@ export class AppComponent {
 
   private createScene() {
     this.camera = new THREE.PerspectiveCamera(40, this.getAspectRatio(), 1, 1000);
-    this.camera.position.set( 0, -40, 40 );
+    this.camera.position.set( 0, -40, 40);
     this.camera.rotateX(Math.PI/4)
     this.scene = new THREE.Scene();
     this.scene.add(this.floor);
@@ -50,9 +51,8 @@ export class AppComponent {
     this.scene.add(this.pointLight);
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
-    this.p.growBranch();
-    addBranchChildNode(this.p.children[0]);
-    this.scene.add(this.p.mesh);
+    // this.p.growBranch();
+    this.generateRoot();
   }
 
   private animate() {
@@ -76,9 +76,20 @@ export class AppComponent {
    * Event handlers for webpage
    */
   
-  onRegen() {
-    console.log("Regenerating plant!");
+  generateRoot() {
+    console.log("Regenerating new root!");
+    this.scene.remove(this.p.mesh);
+    this.p.dispose();
     this.p = createRootPlantNode(2);
+    this.scene.add(this.p.mesh);
+    // this.p.grow();
+    // this.p.grow();
+    // this.p.grow();
+  }
+
+  onGrow() {
+    console.log("growing plant!");
+    this.p.grow();
   }
 
   onWindowResize(_: Event) {
@@ -101,7 +112,8 @@ export class AppComponent {
     console.log("mouse down event!");
   }
 
-  onScroll(_: Event) {
+  onScroll(e: WheelEvent) {
+    this.camera.translateOnAxis(this.scene.up, e.deltaY/10);
     console.log("scroll event!");
   }
 }

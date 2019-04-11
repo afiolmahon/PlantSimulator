@@ -2,7 +2,8 @@
 <div (window:resize)="onWindowResize($event)" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp($event)" (wheel)="onScroll($event)">
     <div id="info">
         <div class="container">
-            <button (click)="onRegen()" class="btn btn-success">Regenerate</button>
+            <button (click)="generateRoot()" class="btn btn-warning">Regenerate</button>
+            <button (click)="onGrow()" class="btn btn-success">Grow</button>
         </div>
     </div>
     <canvas #canvas></canvas>
