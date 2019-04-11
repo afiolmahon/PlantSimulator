@@ -1,12 +1,9 @@
 import { CylinderBufferGeometry, Mesh, Color, Vector3, MeshNormalMaterial } from 'three';
-import { Material } from 'three';
-import { BufferGeometry } from 'three';
-
+import { MeshLambertMaterial } from 'three';
 
 export function GeneratePlantColor(): Color {
     return new Color(Math.random() * 0.4, Math.random() * 0.3 + 0.7, Math.random() * 0.4);
 }
-
 
 var REDUCTION = 0.4;
 var NODE_HEIGHT = 4;
@@ -23,7 +20,7 @@ export enum NTYPE {
 export function createRootPlantNode(lowRadius: number): PlantNode {
     let topRadius = lowRadius - Math.random() * REDUCTION;
     let geo = new CylinderBufferGeometry(topRadius, lowRadius, NODE_HEIGHT);
-    let mesh = new Mesh(geo, new MeshNormalMaterial);
+    let mesh = new Mesh(geo, new MeshLambertMaterial({color: GeneratePlantColor() }));
     let n = new PlantNode(0, lowRadius, topRadius, mesh);
     n.mesh.translateZ(NODE_HEIGHT/2);
     n.mesh.rotateOnWorldAxis(X_AXIS, Math.PI/2);
@@ -43,8 +40,7 @@ export function addBranchChildNode(parent: PlantNode): void {
     let sign: number = ((Math.random() >= 0.5) ? 1 : -1);
     sideBranchMesh.rotateOnAxis(Z_AXIS, sign*(Math.PI/2));
     sideBranchMesh.rotateOnAxis(X_AXIS, -sign*Math.random());
-    sideBranchMesh.translateOnAxis(Y_AXIS, sign*NODE_HEIGHT/1.5);
-    sideBranchMesh.rotateOnAxis(Y_AXIS, (Math.random() * Math.PI/2) - (Math.PI /2));
+    sideBranchMesh.translateOnAxis(Y_AXIS, sign*NODE_HEIGHT);
     // sideBranchMesh.translateOnAxis(Z_AXIS, 2);
     // create & add to parent node
     let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh);

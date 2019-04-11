@@ -1,7 +1,10 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div (window:resize)="onWindowResize($event)" (mousedown)="inputHandler.onMouseDown($event)" (mousemove)="inputHandler.onMouseMove($event)"
-    (mouseup)="inputHandler.onMouseUp($event)" (wheel)="onScroll($event)">
-    <canvas #canvas (touchstart)="th.onTouchStart($event)" (touchmove)="th.onTouchMove($event)"
-(touchend)="th.onTouchEnd($event)"></canvas>
+
+<div (window:resize)="onWindowResize($event)" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp($event)" (wheel)="onScroll($event)">
+    <div id="info">
+        <div class="container">
+            <button (click)="onRegen()" class="btn btn-success">Regenerate</button>
+        </div>
+    </div>
+    <canvas #canvas></canvas>
 </div>
 <router-outlet></router-outlet>

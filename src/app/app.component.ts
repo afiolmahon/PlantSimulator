@@ -1,7 +1,8 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import * as THREE from 'three';
 import { PlantNode, createRootPlantNode, addBranchChildNode } from './Plant';
-import { PerspectiveCamera, Mesh, PlaneBufferGeometry, MeshBasicMaterial } from 'three';
+import { PerspectiveCamera, Mesh, PlaneBufferGeometry, MeshBasicMaterial, PointLight } from 'three';
+import { AmbientLight } from 'three';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,8 @@ export class AppComponent {
   private renderer: THREE.WebGLRenderer;
   // 3D components
   private scene: THREE.Scene;
+  pointLight = new PointLight(0xAA8888);
+
   private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshBasicMaterial({color: 0x994C00}));
   private p: PlantNode;
   private t: number = 0; // animation timer/
@@ -26,6 +29,8 @@ export class AppComponent {
   constructor() {
     this.p = createRootPlantNode(2);
   }
+
+  private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
 
   ngOnInit() {
     this.createScene();
@@ -40,19 +45,14 @@ export class AppComponent {
     this.camera.rotateX(Math.PI/4)
     this.scene = new THREE.Scene();
     this.scene.add(this.floor);
+    this.scene.add(new AmbientLight(0x444444));
+    this.pointLight.position.set(20, -50, 50); 
+    this.scene.add(this.pointLight);
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
     this.p.growBranch();
     addBranchChildNode(this.p.children[0]);
     this.scene.add(this.p.mesh);
-  }
-
-  private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
-  
-  onWindowResize(_: Event) {
-    this.camera.aspect = this.getAspectRatio();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.camera.updateProjectionMatrix();
   }
 
   private animate() {
@@ -69,6 +69,40 @@ export class AppComponent {
       component.renderer.render(component.scene, component.camera);
       requestAnimationFrame(render);
     }());
+  }
+  
+
+  /**
+   * Event handlers for webpage
+   */
+  
+  onRegen() {
+    console.log("Regenerating plant!");
+    this.p = createRootPlantNode(2);
+  }
+
+  onWindowResize(_: Event) {
+    this.camera.aspect = this.getAspectRatio();
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.camera.updateProjectionMatrix();
+  }
+
+
+  // TODO For Camera Controller
+  onMouseMove(_: Event) {
+    //TODO
+  }
+
+  onMouseUp(_: Event) {
+    console.log("mouse up event!");
+  }
+
+  onMouseDown(_: Event) {
+    console.log("mouse down event!");
+  }
+
+  onScroll(_: Event) {
+    console.log("scroll event!");
   }
 }
 
