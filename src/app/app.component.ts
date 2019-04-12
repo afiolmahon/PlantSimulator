@@ -5,6 +5,15 @@ import { PerspectiveCamera, Mesh, PlaneBufferGeometry, PointLight } from 'three'
 import { AmbientLight } from 'three';
 import { MeshLambertMaterial } from 'three';
 
+/*
+
+FROM OrbitControls.js -- we should look into adding this
+
+  controls = new THREE.OrbitControls( camera );
+  controls.target.set( 0, 100, 0 );
+  controls.update();
+*/
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -98,8 +107,6 @@ export class AppComponent {
     this.p.dispose();
     this.p = this.plantGen.createRootPlantNode(2);
     this.scene.add(this.p.mesh);
-    this.plantGen.growPlant(this.p);
-    this.plantGen.growPlant(this.p);
     this.plantGen.growPlant(this.p);
   }
 

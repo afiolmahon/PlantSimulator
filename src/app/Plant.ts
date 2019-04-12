@@ -26,7 +26,7 @@ export class PlantGenerator {
     public branch_radius_constant_reduction: number = 0.3;
     public branch_radius_variable_reduction: number = 0.2
     public branch_radius_min: number = 0.2;
-    publicbranch_pitch_max: number = Math.PI/4;
+    public branch_pitch_max: number = Math.PI/4;
 
     constructor() {}
 
@@ -41,7 +41,19 @@ export class PlantGenerator {
         m.geometry.computeBoundingBox();
         geometry_top.translateY(m.geometry.boundingBox.max.y);
         return m;
-    }   
+    }
+    makeChildBranchMesh(radius_min: number, radius_max: number, height: number): Mesh {
+        let material = new MeshStandardMaterial({color: GeneratePlantColor(), flatShading: true});
+        let geometry_branch = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
+    
+        let capGeo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
+        let geometry_top = new Mesh(capGeo, material);
+        let m = new Mesh(geometry_branch, material)
+        m.add(geometry_top);
+        m.geometry.computeBoundingBox();
+        geometry_top.translateY(m.geometry.boundingBox.max.y);
+        return m;
+    }  
     
     createRootPlantNode(lowRadius: number): PlantNode {
         let topRadius = lowRadius - 0.3 - (Math.random() * 0.2);
@@ -73,20 +85,54 @@ export class PlantGenerator {
         }
     }
 
+    branchPosition(branch: Mesh): void{
+        let branchProb = Math.floor(Math.random() * 3);
+        switch(branchProb){
+            case 0:
+                branch.position.set(-this.branch_length_max/3, 0, 0);
+                branch.rotateOnAxis(Z_AXIS, Math.PI/3);
+                let pitch: number = Math.random() * 0.2;
+                // let sign: number = Math.random()
+                branch.rotateOnAxis(Y_AXIS, pitch);
+                let sign: number = ((Math.random() >= 0.5) ? 1 : -1);   
+                break;
+            case 1:
+                branch.position.set(this.branch_length_max/3, 0, 0);
+                branch.rotateOnAxis(Z_AXIS, -Math.PI/3);
+                let pitch2: number = Math.random() * 0.2;
+                // let sign: number = Math.random()
+                branch.rotateOnAxis(Y_AXIS, -pitch2);
+                let sign2: number = ((Math.random() >= 0.5) ? 1 : -1);   
+                break;
+            case 2:
+                branch.position.set(-this.branch_length_max/3, 0, 0);
+                branch.rotateOnAxis(Z_AXIS, Math.PI/2);
+                let pitch3: number = Math.random() * 0.2;
+                // let sign: number = Math.random()
+                branch.rotateOnAxis(Y_AXIS, pitch3);
+                let sign3: number = ((Math.random() >= 0.5) ? 1 : -1);   
+                break;
+        }
+    }
+
     addBranchChildNode(parent: PlantNode): void {
+        let branchProb = Math.floor(Math.random() * 2); // 0 or 1; 0 == child branch ; 1 == no branch
+
         let topRadius = parent.endRadius - (Math.random() * this.branch_radius_variable_reduction) - this.branch_radius_constant_reduction;
         // Create branch geometry
         let mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, this.branch_length_max);//new Mesh(mainBranchGeo, mainBranchMat);
-        let sideBranchMesh = this.makeBranchMesh(topRadius/4, parent.endRadius/4, this.branch_length_max);//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
+
+        if(branchProb == 0){
+            let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, this.branch_length_max/1.5);//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
     
-        mainBranchMesh.add(sideBranchMesh);
-        mainBranchMesh.position.set(0, this.branch_length_max, 0);
-        sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
-        let pitch: number = Math.random() * 0.2;
-        // let sign: number = Math.random()
-        sideBranchMesh.rotateOnAxis(Y_AXIS, pitch);
-        let sign: number = ((Math.random() >= 0.5) ? 1 : -1);
+            this.branchPosition(sideBranchMesh);
+            mainBranchMesh.add(sideBranchMesh);
+             
+        }
         
+        mainBranchMesh.position.set(0, this.branch_length_max, 0);
+
+
         // create & add to parent node
         let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh);
         n.mesh.add(mainBranchMesh);
