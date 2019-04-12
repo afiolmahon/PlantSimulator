@@ -14,6 +14,7 @@ export class AppComponent {
   private scene: THREE.Scene;
   
   private testCube: THREE.Mesh;
+  private testTube: THREE.Mesh;
   private t: number = 0; // animation timer/
 
   private camera : THREE.PerspectiveCamera;
@@ -21,6 +22,8 @@ export class AppComponent {
 
   constructor() {
     this.testCube = new THREE.Mesh(new THREE.BoxGeometry(2,2,2), new THREE.MeshBasicMaterial({ color: 0x457a45 }));
+    this.testTube = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 20, 32), new THREE.MeshBasicMaterial({color: 0xffff00}));
+
   }
 
   ngOnInit() {
@@ -38,7 +41,8 @@ export class AppComponent {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
-    this.scene.add(this.testCube);
+    //this.scene.add(this.testCube);
+    this.scene.add(this.testTube);
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
