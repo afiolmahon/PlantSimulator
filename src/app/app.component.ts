@@ -1,7 +1,7 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, Input } from '@angular/core';
 import * as THREE from 'three';
-import { PlantNode, createRootPlantNode, addBranchChildNode } from './Plant';
-import { PerspectiveCamera, Mesh, PlaneBufferGeometry, MeshBasicMaterial, PointLight } from 'three';
+import { PlantNode, PlantGenerator } from './Plant';
+import { PerspectiveCamera, Mesh, PlaneBufferGeometry, PointLight } from 'three';
 import { AmbientLight } from 'three';
 import { MeshLambertMaterial } from 'three';
 
@@ -11,6 +11,10 @@ import { MeshLambertMaterial } from 'three';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
+  // Generator Parameters
+  @Input() gen_width_decrement_const: number = 0.4;
+  @Input() gen_width_decrement_var: number = 0.2;
+
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -21,14 +25,15 @@ export class AppComponent {
 
   private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshLambertMaterial({color: 0x994C00}));
   private p: PlantNode;
-  private t: number = 0; // animation timer/
 
   private camera: PerspectiveCamera;
 
-  title = 'PlantSimulator';
+  plantGen: PlantGenerator = new PlantGenerator();
 
+  title = 'PlantSimulator';
+  
   constructor() {
-    this.p = createRootPlantNode(2);
+    this.p = this.plantGen.createRootPlantNode(2);
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
@@ -37,6 +42,8 @@ export class AppComponent {
     this.createScene();
     this.startRenderingLoop();
   }
+
+
 
   getAspectRatio(): number { return window.innerWidth / window.innerHeight; }
 
@@ -80,16 +87,16 @@ export class AppComponent {
     console.log("Regenerating new root!");
     this.scene.remove(this.p.mesh);
     this.p.dispose();
-    this.p = createRootPlantNode(2);
+    this.p = this.plantGen.createRootPlantNode(2);
     this.scene.add(this.p.mesh);
-    // this.p.grow();
-    // this.p.grow();
-    // this.p.grow();
+    this.plantGen.growPlant(this.p);
+    this.plantGen.growPlant(this.p);
+    this.plantGen.growPlant(this.p);
   }
 
   onGrow() {
     console.log("growing plant!");
-    this.p.grow();
+    this.plantGen.growPlant(this.p);
   }
 
   onWindowResize(_: Event) {
