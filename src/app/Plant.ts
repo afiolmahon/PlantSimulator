@@ -42,18 +42,6 @@ export class PlantGenerator {
         geometry_top.translateY(m.geometry.boundingBox.max.y);
         return m;
     }
-    makeChildBranchMesh(radius_min: number, radius_max: number, height: number): Mesh {
-        let material = new MeshStandardMaterial({color: GeneratePlantColor(), flatShading: true});
-        let geometry_branch = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
-    
-        let capGeo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
-        let geometry_top = new Mesh(capGeo, material);
-        let m = new Mesh(geometry_branch, material)
-        m.add(geometry_top);
-        m.geometry.computeBoundingBox();
-        geometry_top.translateY(m.geometry.boundingBox.max.y);
-        return m;
-    }  
     
     createRootPlantNode(lowRadius: number): PlantNode {
         let topRadius = lowRadius - 0.3 - (Math.random() * 0.2);
@@ -94,23 +82,20 @@ export class PlantGenerator {
                 let pitch: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
                 branch.rotateOnAxis(Y_AXIS, pitch);
-                let sign: number = ((Math.random() >= 0.5) ? 1 : -1);   
                 break;
             case 1:
                 branch.position.set(this.branch_length_max/3, 0, 0);
                 branch.rotateOnAxis(Z_AXIS, -Math.PI/3);
                 let pitch2: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
-                branch.rotateOnAxis(Y_AXIS, -pitch2);
-                let sign2: number = ((Math.random() >= 0.5) ? 1 : -1);   
+                branch.rotateOnAxis(Y_AXIS, -pitch2); 
                 break;
             case 2:
                 branch.position.set(-this.branch_length_max/3, 0, 0);
                 branch.rotateOnAxis(Z_AXIS, Math.PI/2);
                 let pitch3: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
-                branch.rotateOnAxis(Y_AXIS, pitch3);
-                let sign3: number = ((Math.random() >= 0.5) ? 1 : -1);   
+                branch.rotateOnAxis(Y_AXIS, pitch3);  
                 break;
         }
     }
