@@ -15,7 +15,6 @@ export class AppComponent {
   @Input() gen_width_decrement_const: number = 0.4;
   @Input() gen_width_decrement_var: number = 0.2;
 
-
   @ViewChild('canvas') private canvasRef: ElementRef;
 
   private renderer: THREE.WebGLRenderer;

@@ -26,12 +26,12 @@ export class PlantGenerator {
     public branch_radius_constant_reduction: number = 0.3;
     public branch_radius_variable_reduction: number = 0.2
     public branch_radius_min: number = 0.2;
-    publicbranch_pitch_max: number = Math.PI/4;
+    public branch_pitch_max: number = Math.PI/4;
 
     constructor() {}
 
     makeBranchMesh(radius_min: number, radius_max: number, height: number): Mesh {
-        let material = new MeshStandardMaterial({color: GeneratePlantColor(), flatShading: true});
+        let material = new MeshStandardMaterial({color: GeneratePlantColor(), flatShading: false});
         let geometry_branch = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
     
         let capGeo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
