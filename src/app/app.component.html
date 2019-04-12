@@ -1,4 +1,17 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<canvas #canvas ></canvas>
 
+<div (window:resize)="onWindowResize($event)" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp($event)" (wheel)="onScroll($event)">
+    <div id="info">
+        <div class="container">
+                <form>
+                    <div class="form-group">
+                        <label for="formControlRange">Radius Decrement (Constant)</label>
+                        <input type="range" name="range" class="form-control-range" ng-model="gen_width_decrement" min="0"  max="2">
+                    </div>
+                </form>
+            <button (click)="generateRoot()" class="btn btn-warning">Regenerate</button>
+            <button (click)="onGrow()" class="btn btn-success">Grow</button>
+        </div>
+    </div>
+    <canvas #canvas></canvas>
+</div>
 <router-outlet></router-outlet>

@@ -1,6 +1,16 @@
 # PlantSimulator
+Advanced Computer Graphics Final Project
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.6.
+## Quickstart
+- In terminal
+```bash
+# Navigate to this directory
+cd ../path/to/PlantSimulator
+# Install dependencies
+npm install
+# Run local development server, changes will autoreload when saved
+npm start 
+```
 
 ## Development server
 

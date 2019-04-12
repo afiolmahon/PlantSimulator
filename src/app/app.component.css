@@ -1,0 +1,13 @@
+canvas {
+    display: block;
+}
+
+#info {
+	position: absolute;
+	/* top: 0%; */
+	/* margin-top: -3%; */
+	width: 100%;
+	/* text-align: center; */
+	/* z-index: 99; */
+	display:block;
+}
