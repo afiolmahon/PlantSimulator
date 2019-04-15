@@ -1,5 +1,6 @@
-import { CylinderBufferGeometry, Mesh, Color, Vector3, MeshStandardMaterial } from 'three';
+import { CylinderBufferGeometry, Mesh, Color, MeshStandardMaterial } from 'three';
 import { SphereBufferGeometry } from 'three';
+import { X_AXIS, Y_AXIS, Z_AXIS } from './utility';
 
 export function GeneratePlantColor(): Color {
     let r1 = Math.random();
@@ -7,11 +8,6 @@ export function GeneratePlantColor(): Color {
     let r3 = Math.random();
     return new Color(r1 * 0.4, r2 * 0.4 + 0.6, r3 * 0.4);
 }
-
-var X_AXIS: Vector3 = new Vector3(1, 0, 0);
-var Y_AXIS: Vector3 = new Vector3(0, 1, 0);
-var Z_AXIS: Vector3 = new Vector3(0, 0, 1);
-
 
 export enum NTYPE {
     BRANCH,
