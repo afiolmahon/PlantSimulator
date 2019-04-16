@@ -1,9 +1,9 @@
-import { Component, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import * as THREE from 'three';
-import { PlantNode, PlantGenerator } from './Plant';
-import { PerspectiveCamera, Mesh, PlaneBufferGeometry, PointLight } from 'three';
-import { AmbientLight } from 'three';
-import { MeshLambertMaterial } from 'three';
+import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight } from 'three';
+import { PlantNode } from './Plant';
+import { PlantGenerator } from './Generator';
+
 
 /*
 
@@ -36,7 +36,7 @@ export class AppComponent {
 
   private camera: PerspectiveCamera;
 
-  plantGen: PlantGenerator = new PlantGenerator();
+  plantGen: PlantGenerator = new PlantGenerator(123);
 
   title = 'PlantSimulator';
   
@@ -67,7 +67,7 @@ export class AppComponent {
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
     // this.p.growBranch();
-    this.generateRoot();
+    this.generateNewPlant();
   }
 
   private animate() {
@@ -91,7 +91,7 @@ export class AppComponent {
    * Event handlers for webpage
    */
   
-  generateRoot() {
+  generateNewPlant() {
     console.log("Regenerating new root!");
     this.scene.remove(this.p.mesh);
     this.p.dispose();
