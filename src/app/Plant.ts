@@ -1,6 +1,7 @@
 import { CylinderBufferGeometry, Mesh, Color, MeshStandardMaterial } from 'three';
 import { SphereBufferGeometry } from 'three';
 import { X_AXIS, Y_AXIS, Z_AXIS } from './utility';
+import { LeafGenerator } from './Leaf';
 
 export function GeneratePlantColor(): Color {
     let r1 = Math.random();
@@ -16,6 +17,8 @@ export enum NTYPE {
 
 export class PlantGenerator {
     // Generator Properties
+    LeafGen: LeafGenerator = new LeafGenerator();
+
     public branch_mesh_radial_segments: number = 20;
     public branch_mesh_height_segments: number = 1;
     public branch_length_max = 4;
@@ -76,6 +79,8 @@ export class PlantGenerator {
 
     branchPosition(branch: Mesh): void{
         let branchProb = Math.floor(Math.random() * 3);
+        let leaf = this.LeafGen.makeLeafMesh();
+        branch.add(leaf); 
         switch(branchProb){
             case 0:
                 branch.position.set(-this.branch_length_max/3, 0, 0);
@@ -83,6 +88,8 @@ export class PlantGenerator {
                 let pitch: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
                 branch.rotateOnAxis(Y_AXIS, pitch);
+                //.9 <--> 1.1 && this.branch_length_max/3 - 0.3
+                leaf.position.set(branch.position.x + .9, branch.position.y + 0.3, 0.1);
                 break;
             case 1:
                 branch.position.set(this.branch_length_max/3, 0, 0);
@@ -90,6 +97,10 @@ export class PlantGenerator {
                 let pitch2: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
                 branch.rotateOnAxis(Y_AXIS, -pitch2); 
+                leaf.position.set(branch.position.x - 1.5, branch.position.y + 1.5, 0.1);
+                leaf.rotateOnAxis(Z_AXIS, 180);
+                leaf.rotateOnAxis(X_AXIS, 180);
+                
                 break;
             case 2:
                 branch.position.set(-this.branch_length_max/3, 0, 0);
@@ -97,8 +108,11 @@ export class PlantGenerator {
                 let pitch3: number = Math.random() * 0.2;
                 // let sign: number = Math.random()
                 branch.rotateOnAxis(Y_AXIS, pitch3);  
+                leaf.position.set(branch.position.x +1, branch.position.y + .5, 0.1);
                 break;
         }
+        leaf.scale.set(0.01,0.01,0.01);
+       // leaf.position.set(branch.position.x+.8, branch.position.y, 0);
     }
 
     addBranchChildNode(parent: PlantNode, offsetAngle: number): void {

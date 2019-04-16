@@ -38,6 +38,8 @@ export class AppComponent {
 
   plantGen: PlantGenerator = new PlantGenerator();
 
+  
+
   title = 'PlantSimulator';
   
   constructor() {
@@ -67,6 +69,7 @@ export class AppComponent {
     this.scene.background = new THREE.Color(0x54a1ff);
     // Add geometry to scene
     // this.p.growBranch();
+    //this.scene.add(this.LeafGen.makeLeafMesh());
     this.generateRoot();
   }
 
