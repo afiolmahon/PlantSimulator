@@ -5,7 +5,7 @@ import { PerspectiveCamera, Mesh, PlaneBufferGeometry, PointLight } from 'three'
 import { AmbientLight } from 'three';
 import { MeshLambertMaterial } from 'three';
 import * as OrbitControls from 'three-orbitcontrols';
-
+import { LeafGenerator } from './Leaf';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +31,7 @@ export class AppComponent {
   private controls: OrbitControls;
 
   plantGen: PlantGenerator = new PlantGenerator();
-
+  leafGen: LeafGenerator = new LeafGenerator();
   
 
   title = 'PlantSimulator';
@@ -68,7 +68,7 @@ export class AppComponent {
   }
 
   private animate() {
-    this.p.animate();
+    //this.p.animate();
   }
 //    Orbit - left mouse / touch: one-finger move
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
@@ -83,6 +83,8 @@ export class AppComponent {
     this.controls.enablePan = false;
     this.controls.minPolarAngle = Math.PI/4;
     this.controls.maxPolarAngle = Infinity;
+
+    //this.scene.add(this.leafGen.ShowLeaf());
     //this.controls.enableRotate = false;
     let component: AppComponent = this;
     (function render() {
@@ -101,7 +103,7 @@ export class AppComponent {
     console.log("Regenerating new root!");
     this.scene.remove(this.p.mesh);
     this.p.dispose();
-    this.p = this.plantGen.createRootPlantNode(2);
+    this.p = this.plantGen.createRootPlantNode(4);
     this.scene.add(this.p.mesh);
     this.plantGen.growPlant(this.p);
   }
