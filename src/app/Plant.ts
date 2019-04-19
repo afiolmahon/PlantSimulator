@@ -1,5 +1,6 @@
-import { CylinderBufferGeometry, Mesh, Color, Vector3, MeshStandardMaterial } from 'three';
+import { CylinderBufferGeometry, Mesh, Color, MeshStandardMaterial } from 'three';
 import { SphereBufferGeometry } from 'three';
+import { X_AXIS, Y_AXIS, Z_AXIS } from './utility';
 import { LeafGenerator } from './Leaf';
 
 export function GeneratePlantColor(): Color {
@@ -8,11 +9,6 @@ export function GeneratePlantColor(): Color {
     let r3 = Math.random();
     return new Color(r1 * 0.4, r2 * 0.4 + 0.6, r3 * 0.4);
 }
-
-var X_AXIS: Vector3 = new Vector3(1, 0, 0);
-var Y_AXIS: Vector3 = new Vector3(0, 1, 0);
-var Z_AXIS: Vector3 = new Vector3(0, 0, 1);
-
 
 export enum NTYPE {
     BRANCH,
@@ -49,7 +45,7 @@ export class PlantGenerator {
     createRootPlantNode(lowRadius: number): PlantNode {
         let topRadius = lowRadius - 0.3 - (Math.random() * 0.2);
         let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max);
-        let n = new PlantNode(0, lowRadius, topRadius, mesh);
+        let n = new PlantNode(0, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(this.branch_length_max/2);
         n.mesh.rotateOnWorldAxis(X_AXIS, Math.PI/2);
         return n;
@@ -62,7 +58,12 @@ export class PlantGenerator {
     addChildToNode(parent: PlantNode): void {
         // Check threshold for minimum feature size
         if (parent.endRadius >=  this.branch_radius_min) {
-            this.addBranchChildNode(parent);
+            if (Math.random() >= 0.7) {
+                this.addBranchChildNode(parent, 0);
+            } else { // add double branch
+                this.addBranchChildNode(parent, -Math.PI/4);
+                this.addBranchChildNode(parent, Math.PI/4);
+            }
         }
     }
 
@@ -114,7 +115,7 @@ export class PlantGenerator {
        // leaf.position.set(branch.position.x+.8, branch.position.y, 0);
     }
 
-    addBranchChildNode(parent: PlantNode): void {
+    addBranchChildNode(parent: PlantNode, offsetAngle: number): void {
         let branchProb = Math.floor(Math.random() * 2); // 0 or 1; 0 == child branch ; 1 == no branch
 
         let topRadius = parent.endRadius - (Math.random() * this.branch_radius_variable_reduction) - this.branch_radius_constant_reduction;
@@ -123,21 +124,30 @@ export class PlantGenerator {
 
         if(branchProb == 0){
             let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, this.branch_length_max/1.5);//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
-    
+            // sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
+          /*  sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
+            sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
+            sideBranchMesh.rotateOnAxis(Y_AXIS, Math.random() * (Math.PI/2));  
+            */
             this.branchPosition(sideBranchMesh);
             mainBranchMesh.add(sideBranchMesh);
-             
         }
         
         mainBranchMesh.position.set(0, this.branch_length_max, 0);
-
+        // mainBranchMesh.rotateY(Math.random() * Math.PI/2); rotated branches needs to self intersect less
 
         // create & add to parent node
-        let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh);
+        let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh, offsetAngle);
         n.mesh.add(mainBranchMesh);
         parent.children.push(n);
         parent.mesh.add(n.mesh);
     }
+}
+
+export function rotateBase(mesh: Mesh, angle: number) {
+    mesh.translateY(-mesh.geometry.boundingBox.max.y);
+    mesh.rotation.z = angle;
+    mesh.translateY(mesh.geometry.boundingBox.max.y);
 }
 
 /**
@@ -147,7 +157,7 @@ export class PlantNode {
 
     public children: PlantNode[] = []
 
-    constructor(public depth: number, public startRadius: number, public endRadius: number, public mesh: Mesh) {
+    constructor(public depth: number, public startRadius: number, public endRadius: number, public mesh: Mesh, public offsetAngle: number) {
     
     }
 
@@ -159,17 +169,12 @@ export class PlantNode {
     t = 0;
     animate() {
         this.children.forEach(n => {
-            let angle: number = (Math.PI/60) * Math.sin(this.t);
-            n.rotateBase(angle);
+            let angle: number = (Math.PI/60) * Math.sin(this.t) + this.offsetAngle;
+            rotateBase(n.mesh, angle);
             n.animate();
         });
         // this.testCube.position.setZ(2 * Math.sin(this.t));
         this.t += 0.01;
     }
 
-    rotateBase(angle: number) {
-        this.mesh.translateY(-this.mesh.geometry.boundingBox.max.y);
-        this.mesh.rotation.z = angle;
-        this.mesh.translateY(this.mesh.geometry.boundingBox.max.y);
-    }
 }
