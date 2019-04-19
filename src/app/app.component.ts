@@ -4,15 +4,8 @@ import { PlantNode, PlantGenerator } from './Plant';
 import { PerspectiveCamera, Mesh, PlaneBufferGeometry, PointLight } from 'three';
 import { AmbientLight } from 'three';
 import { MeshLambertMaterial } from 'three';
+import * as OrbitControls from 'three-orbitcontrols';
 
-/*
-
-FROM OrbitControls.js -- we should look into adding this
-
-  controls = new THREE.OrbitControls( camera );
-  controls.target.set( 0, 100, 0 );
-  controls.update();
-*/
 
 @Component({
   selector: 'app-root',
@@ -35,6 +28,7 @@ export class AppComponent {
   private p: PlantNode;
 
   private camera: PerspectiveCamera;
+  private controls: OrbitControls;
 
   plantGen: PlantGenerator = new PlantGenerator();
 
@@ -76,11 +70,20 @@ export class AppComponent {
   private animate() {
     this.p.animate();
   }
-
+//    Orbit - left mouse / touch: one-finger move
+//    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
+//    Pan - right mouse, or left mouse + ctrl/meta/shiftKey, or arrow keys / touch: two-finger move
   private startRenderingLoop() {
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+    //Setup Orbit Controls here
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enablePan = false;
+    this.controls.minPolarAngle = Math.PI/4;
+    this.controls.maxPolarAngle = Infinity;
+    //this.controls.enableRotate = false;
     let component: AppComponent = this;
     (function render() {
       component.animate();
