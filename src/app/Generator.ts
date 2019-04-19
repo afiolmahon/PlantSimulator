@@ -44,15 +44,18 @@ export class PlantGenerator {
                          inRange(this.rand(), this.branch_color_b));
     }
 
-    makeBranchMesh(radius_min: number, radius_max: number, height: number, color: Color): Mesh {
-        let material = new MeshStandardMaterial({color: color, flatShading: false});
-        let geometry_branch = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
-        let capGeo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
-        let geometry_top = new Mesh(capGeo, material);
-        let m = new Mesh(geometry_branch, material)
-        m.add(geometry_top);
+    makeBranchMesh(radius_min: number, radius_max: number, height: number, color: Color, name: string): Mesh {
+        let mat = new MeshStandardMaterial({color: color, flatShading: false});
+        // cylinder
+        let branch_geo = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
+        let m = new Mesh(branch_geo, mat)
+        m.name = name;
         m.geometry.computeBoundingBox();
-        geometry_top.translateY(m.geometry.boundingBox.max.y);
+        //top
+        let top_geo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
+        let top_mesh = new Mesh(top_geo, mat);
+        top_mesh.translateY(m.geometry.boundingBox.max.y);
+        m.add(top_mesh);
         return m;
     }
     
@@ -62,7 +65,7 @@ export class PlantGenerator {
      */
     createRootPlantNode(lowRadius: number): PlantNode {
         let topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5])
-        let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max, this.generatePlantColor());
+        let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max, this.generatePlantColor(), "root");
         let n = new PlantNode(0, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(this.branch_length_max/2);
         n.mesh.rotateOnWorldAxis(X_AXIS, Math.PI/2);
@@ -112,10 +115,10 @@ export class PlantGenerator {
         let topRadius = parent.endRadius * (this.branch_radius_reduction[0] + reduction_var);
 
         // Add branch geometry
-        let mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, this.branch_length_max, this.generatePlantColor());//new Mesh(mainBranchGeo, mainBranchMat);
+        let mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, this.branch_length_max, this.generatePlantColor(), "main_branch");//new Mesh(mainBranchGeo, mainBranchMat);
         if(branchProb == 0) {
             let sideBranchLength = this.branch_length_max/1.5;
-            let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, sideBranchLength, this.generatePlantColor());//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
+            let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, sideBranchLength, this.generatePlantColor(), "side_branch");//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
             // Add leaf
             let leaf = this.LeafGen.makeLeafMesh();
             sideBranchMesh.add(leaf); 
@@ -131,7 +134,6 @@ export class PlantGenerator {
         mainBranchMesh.rotateY(rotation);
         // create & add to parent node
         let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh, offsetAngle);
-        n.mesh.add(mainBranchMesh);
         parent.children.push(n);
         parent.mesh.add(n.mesh);
     }
