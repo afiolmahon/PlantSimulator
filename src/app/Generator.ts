@@ -70,8 +70,8 @@ export class PlantGenerator {
         if (parent.endRadius >=  this.branch_radius_min) {
             if (this.getRandom() >= 0.7) {
             } else { // add double branch
-                this.addBranchChildNode(parent, -Math.PI/4, 0.2);
-                this.addBranchChildNode(parent, Math.PI/4, 0.2);
+                this.addBranchChildNode(parent, -Math.PI/4, Math.PI/2);
+                this.addBranchChildNode(parent, Math.PI/4, Math.PI/2);
             }
         }
     }
@@ -109,6 +109,7 @@ export class PlantGenerator {
         }
         
         mainBranchMesh.position.set(0, this.branch_length_max, 0);
+        mainBranchMesh.rotateY(rotation);
         // mainBranchMesh.rotateY(this.getRandom() * Math.PI/2); rotated branches needs to self intersect less
 
         // create & add to parent node

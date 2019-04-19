@@ -1,14 +1,13 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import * as THREE from 'three';
-import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight } from 'three';
+import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
 import { PlantNode } from './Plant';
 import { PlantGenerator } from './Generator';
+import { setRotateAroundPoint, X_AXIS, Z_AXIS } from './utility';
 
 
 /*
-
 FROM OrbitControls.js -- we should look into adding this
-
   controls = new THREE.OrbitControls( camera );
   controls.target.set( 0, 100, 0 );
   controls.update();
@@ -34,12 +33,17 @@ export class AppComponent {
   private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshLambertMaterial({color: 0x994C00}));
   private p: PlantNode;
 
+
   private camera: PerspectiveCamera;
+  private cameraAngle: number = 0;
+  private cameraTilt: number = Math.PI/4;
+  private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
   plantGen: PlantGenerator = new PlantGenerator(123);
 
   title = 'PlantSimulator';
   
+
   constructor() {
     this.p = this.plantGen.createRootPlantNode(2);
   }
@@ -51,14 +55,13 @@ export class AppComponent {
     this.startRenderingLoop();
   }
 
-
-
   getAspectRatio(): number { return window.innerWidth / window.innerHeight; }
 
   private createScene() {
     this.camera = new THREE.PerspectiveCamera(40, this.getAspectRatio(), 1, 1000);
-    this.camera.position.set( 0, -40, 40);
-    this.camera.rotateX(Math.PI/4)
+    let nc = this.cameraPoint.negate()
+    this.camera.position.set(nc.x, nc.y, nc.z); 
+    this.camera.rotateX(this.cameraTilt);
     this.scene = new THREE.Scene();
     this.scene.add(this.floor);
     this.scene.add(new AmbientLight(0x444444));
@@ -113,16 +116,27 @@ export class AppComponent {
 
 
   // TODO For Camera Controller
-  onMouseMove(_: Event) {
+  dragging: boolean = false;
+  lastMousePos: number[] = [0,0];
+  onMouseMove(e: MouseEvent) {
+    let deltaX = this.lastMousePos[0] - e.clientX;
+    this.lastMousePos[0] = e.clientX;
+    console.log(deltaX);
+    if (this.dragging) {
+      this.cameraAngle += deltaX * 0.0001;
+      this.camera.rotateX(-this.cameraTilt);
+      setRotateAroundPoint(this.camera, this.cameraPoint, Z_AXIS, this.cameraAngle);
+      this.camera.rotateX(this.cameraTilt);
+    }
     //TODO
   }
 
   onMouseUp(_: Event) {
-    console.log("mouse up event!");
+    this.dragging = false;
   }
 
   onMouseDown(_: Event) {
-    console.log("mouse down event!");
+    this.dragging = true;
   }
 
   onScroll(e: WheelEvent) {

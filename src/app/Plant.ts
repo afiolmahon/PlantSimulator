@@ -1,6 +1,6 @@
 import { Mesh } from 'three';
 
-export function rotateBase(mesh: Mesh, angle: number) {
+export function rotateAboutBase(mesh: Mesh, angle: number) {
     mesh.translateY(-mesh.geometry.boundingBox.max.y);
     mesh.rotation.z = angle;
     mesh.translateY(mesh.geometry.boundingBox.max.y);
@@ -24,7 +24,7 @@ export class PlantNode {
     animate() {
         this.children.forEach(n => {
             let angle: number = (Math.PI/60) * Math.sin(this.animationTimer) + this.offsetAngle;
-            rotateBase(n.mesh, angle);
+            rotateAboutBase(n.mesh, angle);
             n.animate();
         });
         // this.testCube.position.setZ(2 * Math.sin(this.t));
