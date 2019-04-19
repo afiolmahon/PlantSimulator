@@ -5,13 +5,11 @@ import Prando from 'prando';
 import { PlantNode } from './Plant';
 
 /**
- * Select a value in a range using a position from 0-1
+ * Interpolate value from range, 0 gives range min, 1 gives range max, 0.5 would give range mean
  * @param position: position in range 0 corresponds to min value and 1 to max value
  * @param range: 2 values specifying a range min and max
  */
-function inRange(position: number, range: number[]): number {
-    return range[0] + ( (range[1] - range[0]) * position);
-}
+function inRange(position: number, range: number[]): number { return range[0] + ( (range[1] - range[0]) * position); }
 
 export class PlantGenerator {
     // Geometric Properties
@@ -73,12 +71,14 @@ export class PlantGenerator {
      * @param parent 
      */
     addChildToNode(parent: PlantNode): void {
+        let pitch = Math.PI/4;
+        let roll = Math.PI/2;
         // Check threshold for minimum feature size
         if (parent.endRadius >=  this.branch_radius_min) {
             if (this.rand() >= 0.7) {
             } else { // add double branch
-                this.addBranchChildNode(parent, -Math.PI/4, Math.PI/2);
-                this.addBranchChildNode(parent, Math.PI/4, Math.PI/2);
+                this.addBranchChildNode(parent, -pitch, roll);
+                this.addBranchChildNode(parent, pitch, roll);
             }
         }
     }

@@ -92,7 +92,6 @@ export class AppComponent implements OnInit {
   /**
    * Event handlers for webpage
    */
-  
   generateNewPlant() {
     console.log("Regenerating new root!");
     this.scene.remove(this.p.mesh);
