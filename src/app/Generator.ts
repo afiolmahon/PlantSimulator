@@ -3,6 +3,7 @@ import { SphereBufferGeometry } from 'three';
 import { X_AXIS, Y_AXIS, Z_AXIS } from './utility';
 import Prando from 'prando';
 import { PlantNode } from './Plant';
+import { LeafGenerator } from './Leaf';
 
 /**
  * Interpolate value from range, 0 gives range min, 1 gives range max, 0.5 would give range mean
@@ -12,6 +13,9 @@ import { PlantNode } from './Plant';
 function inRange(position: number, range: number[]): number { return range[0] + ( (range[1] - range[0]) * position); }
 
 export class PlantGenerator {
+
+    LeafGen: LeafGenerator = new LeafGenerator();
+
     // Geometric Properties
     public branch_mesh_radial_segments: number = 20;
     public branch_mesh_height_segments: number = 1;
@@ -40,10 +44,9 @@ export class PlantGenerator {
                          inRange(this.rand(), this.branch_color_b));
     }
 
-    makeBranchMesh(radius_min: number, radius_max: number, height: number): Mesh {
-        let material = new MeshStandardMaterial({color: this.generatePlantColor(), flatShading: false});
+    makeBranchMesh(radius_min: number, radius_max: number, height: number, color: Color): Mesh {
+        let material = new MeshStandardMaterial({color: color, flatShading: false});
         let geometry_branch = new CylinderBufferGeometry(radius_min, radius_max, height, this.branch_mesh_radial_segments, this.branch_mesh_height_segments, false);
-    
         let capGeo = new SphereBufferGeometry(radius_min, this.branch_mesh_radial_segments);
         let geometry_top = new Mesh(capGeo, material);
         let m = new Mesh(geometry_branch, material)
@@ -59,7 +62,7 @@ export class PlantGenerator {
      */
     createRootPlantNode(lowRadius: number): PlantNode {
         let topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5])
-        let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max);
+        let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max, this.generatePlantColor());
         let n = new PlantNode(0, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(this.branch_length_max/2);
         n.mesh.rotateOnWorldAxis(X_AXIS, Math.PI/2);
@@ -109,10 +112,15 @@ export class PlantGenerator {
         let topRadius = parent.endRadius * (this.branch_radius_reduction[0] + reduction_var);
 
         // Add branch geometry
-        let mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, this.branch_length_max);//new Mesh(mainBranchGeo, mainBranchMat);
+        let mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, this.branch_length_max, this.generatePlantColor());//new Mesh(mainBranchGeo, mainBranchMat);
         if(branchProb == 0) {
-            let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, this.branch_length_max/1.5);//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
-            // sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
+            let sideBranchLength = this.branch_length_max/1.5;
+            let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, sideBranchLength, this.generatePlantColor());//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
+            // Add leaf
+            let leaf = this.LeafGen.makeLeafMesh();
+            sideBranchMesh.add(leaf); 
+            leaf.translateY(sideBranchLength/2);
+            leaf.scale.set(0.1,0.1,0.1);
             sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
             sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
             sideBranchMesh.rotateOnAxis(Y_AXIS, this.rand() * (Math.PI/2));  
@@ -121,8 +129,6 @@ export class PlantGenerator {
         
         mainBranchMesh.position.set(0, this.branch_length_max, 0);
         mainBranchMesh.rotateY(rotation);
-        // mainBranchMesh.rotateY(this.getRandom() * Math.PI/2); rotated branches needs to self intersect less
-
         // create & add to parent node
         let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh, offsetAngle);
         n.mesh.add(mainBranchMesh);

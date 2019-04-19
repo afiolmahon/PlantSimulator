@@ -1,11 +1,17 @@
-import { Mesh } from 'three';
+import { Mesh, Color } from 'three';
 
-export function rotateAboutBase(mesh: Mesh, angle: number) {
+export function GeneratePlantColor(): Color {
+    let r1 = Math.random();
+    let r2 = Math.random();
+    let r3 = Math.random();
+    return new Color(r1 * 0.4, r2 * 0.4 + 0.6, r3 * 0.4);
+}
+
+export function rotateBase(mesh: Mesh, angle: number) {
     mesh.translateY(-mesh.geometry.boundingBox.max.y);
     mesh.rotation.z = angle;
     mesh.translateY(mesh.geometry.boundingBox.max.y);
 }
-
 
 /**
  * Plant Graph Data Structure
@@ -24,7 +30,7 @@ export class PlantNode {
     animate() {
         this.children.forEach(n => {
             let angle: number = (Math.PI/60) * Math.sin(this.animationTimer) + this.offsetAngle;
-            rotateAboutBase(n.mesh, angle);
+            rotateBase(n.mesh, angle);
             n.animate();
         });
         // this.testCube.position.setZ(2 * Math.sin(this.t));
