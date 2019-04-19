@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, OnInit, OnChanges } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
 import { PlantNode } from './Plant';
@@ -18,10 +18,9 @@ FROM OrbitControls.js -- we should look into adding this
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   // Generator Parameters
-  @Input() gen_width_decrement_const: number = 0.4;
-  @Input() gen_width_decrement_var: number = 0.2;
+  @Input() gen_rad_decrement: number = 0.3;
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -100,7 +99,11 @@ export class AppComponent {
     this.p.dispose();
     this.p = this.plantGen.createRootPlantNode(2);
     this.scene.add(this.p.mesh);
-    this.plantGen.growPlant(this.p);
+
+    let initialGrowth = Math.floor(Math.random() * 10);
+    for (let i = 0; i < initialGrowth; ++i) {
+      this.plantGen.growPlant(this.p);
+    }
   }
 
   onGrow() {
@@ -116,27 +119,27 @@ export class AppComponent {
 
 
   // TODO For Camera Controller
-  dragging: boolean = false;
-  lastMousePos: number[] = [0,0];
+  // dragging: boolean = false;
+  // lastMousePos: number[] = [0,0];
   onMouseMove(e: MouseEvent) {
-    let deltaX = this.lastMousePos[0] - e.clientX;
-    this.lastMousePos[0] = e.clientX;
-    console.log(deltaX);
-    if (this.dragging) {
-      this.cameraAngle += deltaX * 0.0001;
-      this.camera.rotateX(-this.cameraTilt);
-      setRotateAroundPoint(this.camera, this.cameraPoint, Z_AXIS, this.cameraAngle);
-      this.camera.rotateX(this.cameraTilt);
-    }
+    // let deltaX = this.lastMousePos[0] - e.clientX;
+    // this.lastMousePos[0] = e.clientX;
+    // console.log(deltaX);
+    // if (this.dragging) {
+    //   this.cameraAngle += deltaX * 0.0001;
+    //   this.camera.rotateX(-this.cameraTilt);
+    //   setRotateAroundPoint(this.camera, this.cameraPoint, Z_AXIS, this.cameraAngle);
+    //   this.camera.rotateX(this.cameraTilt);
+    // }
     //TODO
   }
 
   onMouseUp(_: Event) {
-    this.dragging = false;
+    // this.dragging = false;
   }
 
   onMouseDown(_: Event) {
-    this.dragging = true;
+    // this.dragging = true;
   }
 
   onScroll(e: WheelEvent) {

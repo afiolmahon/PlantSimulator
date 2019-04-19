@@ -4,7 +4,14 @@ import { X_AXIS, Y_AXIS, Z_AXIS } from './utility';
 import Prando from 'prando';
 import { PlantNode } from './Plant';
 
-
+/**
+ * Select a value in a range using a position from 0-1
+ * @param position: position in range 0 corresponds to min value and 1 to max value
+ * @param range: 2 values specifying a range min and max
+ */
+function inRange(position: number, range: number[]): number {
+    return range[0] + ( (range[1] - range[0]) * position);
+}
 
 export class PlantGenerator {
     // Geometric Properties
@@ -22,21 +29,17 @@ export class PlantGenerator {
 
     // Psuedorandom number
     private rng: Prando;
-
     
     constructor(seed: number) {
         this.rng = new Prando(seed);
     }
 
-    private getRandom(): number {
-        return this.rng.next();
-    }
+    private rand(): number { return this.rng.next(); }
 
     generatePlantColor(): Color {
-        let r = this.branch_color_r[0] + ( (this.branch_color_r[1] - this.branch_color_r[0]) * this.getRandom() );
-        let g = this.branch_color_g[0] + ( (this.branch_color_g[1] - this.branch_color_g[0]) * this.getRandom() );
-        let b = this.branch_color_b[0] + ( (this.branch_color_b[1] - this.branch_color_b[0]) * this.getRandom() );
-        return new Color(r, g, b);
+        return new Color(inRange(this.rand(), this.branch_color_r),
+                         inRange(this.rand(), this.branch_color_g),
+                         inRange(this.rand(), this.branch_color_b));
     }
 
     makeBranchMesh(radius_min: number, radius_max: number, height: number): Mesh {
@@ -52,8 +55,12 @@ export class PlantGenerator {
         return m;
     }
     
+    /**
+     * Create a new trunk PlantNode
+     * @param lowRadius radius of plant trunk
+     */
     createRootPlantNode(lowRadius: number): PlantNode {
-        let topRadius = lowRadius - 0.3 - (this.getRandom() * 0.2);
+        let topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5])
         let mesh = this.makeBranchMesh(topRadius, lowRadius, this.branch_length_max);
         let n = new PlantNode(0, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(this.branch_length_max/2);
@@ -68,7 +75,7 @@ export class PlantGenerator {
     addChildToNode(parent: PlantNode): void {
         // Check threshold for minimum feature size
         if (parent.endRadius >=  this.branch_radius_min) {
-            if (this.getRandom() >= 0.7) {
+            if (this.rand() >= 0.7) {
             } else { // add double branch
                 this.addBranchChildNode(parent, -Math.PI/4, Math.PI/2);
                 this.addBranchChildNode(parent, Math.PI/4, Math.PI/2);
@@ -76,6 +83,11 @@ export class PlantGenerator {
         }
     }
 
+    /**
+     * Triggers growth of the PlantNode and all of its children, call once on root node and updates
+     * will propagate to entire plant.
+     * @param node node to grow
+     */
     growPlant(node: PlantNode): void {
         // Try to add a node at all leaves
         if (node.children.length > 0) {
@@ -92,9 +104,8 @@ export class PlantGenerator {
      * @param rotation the rotation of the child about the parent
      */
     addBranchChildNode(parent: PlantNode, offsetAngle: number, rotation: number): void {
-        let branchProb = Math.floor(this.getRandom() * 2); // 0 or 1; 0 == child branch ; 1 == no branch
-
-        let reduction_var = (this.branch_radius_reduction[1] - this.branch_radius_reduction[0]) * this.getRandom();
+        let branchProb = Math.floor(this.rand() * 2); // 0 or 1; 0 == child branch ; 1 == no branch
+        let reduction_var = (this.branch_radius_reduction[1] - this.branch_radius_reduction[0]) * this.rand();
         let topRadius = parent.endRadius * (this.branch_radius_reduction[0] + reduction_var);
 
         // Add branch geometry
@@ -104,7 +115,7 @@ export class PlantGenerator {
             // sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
             sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
             sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
-            sideBranchMesh.rotateOnAxis(Y_AXIS, this.getRandom() * (Math.PI/2));  
+            sideBranchMesh.rotateOnAxis(Y_AXIS, this.rand() * (Math.PI/2));  
             mainBranchMesh.add(sideBranchMesh);
         }
         
