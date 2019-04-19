@@ -125,9 +125,11 @@ export class PlantGenerator {
         if(branchProb == 0){
             let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, this.branch_length_max/1.5);//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
             // sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
-            sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
+          /*  sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
             sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
             sideBranchMesh.rotateOnAxis(Y_AXIS, Math.random() * (Math.PI/2));  
+            */
+            this.branchPosition(sideBranchMesh);
             mainBranchMesh.add(sideBranchMesh);
         }
         
