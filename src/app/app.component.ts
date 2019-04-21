@@ -4,6 +4,7 @@ import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBuffer
 import { PlantGenerator } from './Generator';
 import { PlantNode } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
+import { X_AXIS } from './utility';
 
 //    Orbit - left mouse / touch: one-finger move
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
@@ -16,7 +17,7 @@ import { OrbitControls } from 'three-orbitcontrols-ts';
 })
 export class AppComponent implements OnInit {
   // Generator Parameters
-  @Input() gen_rad_decrement: number = 0.3;
+  @Input() gen_rad_decrement = 0.3;
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -27,10 +28,10 @@ export class AppComponent implements OnInit {
   // 3D components
   private scene: THREE.Scene;
   private pointLight = new PointLight(0xAA8888);
-  private floor: Mesh = new Mesh(new PlaneBufferGeometry(40,40), new MeshLambertMaterial({color: 0x994C00}));
+  private floor: Mesh = new Mesh(new PlaneBufferGeometry(80, 80), new MeshLambertMaterial({color: 0x994C00}));
   private plant: PlantNode;
 
-  private cameraRotationX: number = -Math.PI/2;
+  private cameraRotationX: number = -Math.PI / 2;
 
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
@@ -43,7 +44,7 @@ export class AppComponent implements OnInit {
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
 
   getAspectRatio(): number { return window.innerWidth / window.innerHeight; }
-  
+
   private animate() { this.plant.animate(); }
 
 
@@ -68,9 +69,9 @@ export class AppComponent implements OnInit {
     this.scene.add(this.pointLight);
     // Camera
     this.camera = new THREE.PerspectiveCamera(40, this.getAspectRatio(), 1, 1000);
-    let nc = this.cameraPoint.negate()
-    this.cameraPoint.applyAxisAngle(new Vector3(1,0,0), this.cameraRotationX);
-    this.camera.position.set(nc.x, nc.y, nc.z); 
+    const nc = this.cameraPoint.negate();
+    this.cameraPoint.applyAxisAngle(X_AXIS, this.cameraRotationX);
+    this.camera.position.set(nc.x, nc.y, nc.z);
   }
 
 
@@ -79,37 +80,37 @@ export class AppComponent implements OnInit {
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    //Setup Orbit Controls here
+    // Setup Orbit Controls here
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enablePan = false;
     this.controls.enableRotate = true;
-    this.controls.minPolarAngle = Math.PI/4;
+    this.controls.minPolarAngle = Math.PI / 4;
     this.controls.maxPolarAngle = Infinity;
 
-    let component: AppComponent = this;
+    const component: AppComponent = this;
     (function render() {
       component.animate();
       component.renderer.render(component.scene, component.camera);
       requestAnimationFrame(render);
     }());
   }
-  
+
 
   generateNewPlant() {
-    console.log("Regenerating new root!");
+    console.log('Regenerating new root!');
     this.scene.remove(this.plant.mesh);
     this.plant.dispose();
     this.plant = this.plantGen.createRootPlantNode(2);
     this.scene.add(this.plant.mesh);
     // Grow plant a bit
-    let initialGrowth = Math.floor(Math.random() * 10);
+    const initialGrowth = Math.floor(Math.random() * 10);
     for (let i = 0; i < initialGrowth; ++i) {
       this.plantGen.growPlant(this.plant);
     }
   }
 
   onGrow() {
-    console.log("growing plant!");
+    console.log('growing plant!');
     this.plantGen.growPlant(this.plant);
   }
 
