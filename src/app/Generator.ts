@@ -62,10 +62,10 @@ export class PlantGenerator {
 
     /**
      * Create a new trunk PlantNode
-     * @param lowRadius radius of plant trunk
+     * @param lowRadius: radius of plant trunk
      */
     createRootPlantNode(lowRadius: number): PlantNode {
-        const topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5])
+        const topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5]);
         const mesh = this.makeBranchMesh(topRadius, lowRadius, this.BRANCH_LENGTH_MAX, this.generatePlantColor(), 'root');
         const n = new PlantNode(0, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(this.BRANCH_LENGTH_MAX / 2);
@@ -93,7 +93,6 @@ export class PlantGenerator {
     /**
      * Triggers growth of the PlantNode and all of its children, call once on root node and updates
      * will propagate to entire plant.
-     * @param node: node to grow
      */
     growPlant(node: PlantNode): void {
         // Try to add a node at all leaves
@@ -120,7 +119,7 @@ export class PlantGenerator {
              this.generatePlantColor(), 'main_branch');
         if (branchProb === 0) {
             const sideBranchLength = this.BRANCH_LENGTH_MAX / 1.5;
-            const sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius / 4, sideBranchLength, 
+            const sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius / 4, sideBranchLength,
                 this.generatePlantColor(), 'side_branch');
             // Add leaf
             const leaf = this.LeafGen.makeLeafMesh();
