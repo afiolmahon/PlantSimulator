@@ -3,16 +3,17 @@
     <div id="info">
         <div class="container">
             <div class="col-lg-4">
-                <form>
-                        <div class="form-group">
-                            <label>Radius Decrement (Constant)</label>
-                            <!-- <mat-slider min="0" max="1" step="0.1" value="{{gen_rad_decrement}}"></mat-slider> -->
-                        </div>
-                    </form>
+                <div class="form-group">
+                    <label>seed:<input [(ngModel)]="plantGeneratorSeed" placeholder="seed"/></label>
+                </div>
+                <div class="form-group">
+                    <label>Start Width:<input [(ngModel)]="plantRootWidth" placeholder="width"/></label>
+                </div>
+                <!-- <div class="form-group">
+                    <label>Max Branch Length:<input [(ngModel)]="genBranchLengthMax" placeholder="branchLength"/></label>
+                </div> -->
                 <button (click)="generateNewPlant()" class="btn btn-warning">Regenerate</button>
                 <button (click)="onGrow()" class="btn btn-success">Grow</button>
-            </div>
-            <div class="col-md-8">
             </div>
         </div>
     </div>

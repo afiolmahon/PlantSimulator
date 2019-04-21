@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, ViewChild, OnInit, OnChanges } from '@angular/core';
+import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
 import { PlantGenerator } from './Generator';
@@ -16,8 +16,12 @@ import { X_AXIS } from './utility';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-  // Generator Parameters
-  @Input() gen_rad_decrement = 0.3;
+
+  private plantGen: PlantGenerator = new PlantGenerator();
+
+  // Generator Properties
+  @Input() plantGeneratorSeed = 123;
+  @Input() plantRootWidth = 2;
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -32,21 +36,14 @@ export class AppComponent implements OnInit {
   private plant: PlantNode;
 
   private cameraRotationX: number = -Math.PI / 2;
-
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
-  private plantGen: PlantGenerator = new PlantGenerator(123);
-
   constructor() {
-    this.plant = this.plantGen.createRootPlantNode(2);
   }
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
 
   getAspectRatio(): number { return window.innerWidth / window.innerHeight; }
-
-  private animate() { this.plant.animate(); }
-
 
   ngOnInit() {
     this.createScene();
@@ -74,7 +71,6 @@ export class AppComponent implements OnInit {
     this.camera.position.set(nc.x, nc.y, nc.z);
   }
 
-
   private startRenderingLoop() {
     this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
     this.renderer.setPixelRatio(window.devicePixelRatio);
@@ -89,24 +85,26 @@ export class AppComponent implements OnInit {
 
     const component: AppComponent = this;
     (function render() {
-      component.animate();
+      component.plant.animate();
       component.renderer.render(component.scene, component.camera);
       requestAnimationFrame(render);
     }());
   }
 
-
   generateNewPlant() {
-    console.log('Regenerating new root!');
-    this.scene.remove(this.plant.mesh);
-    this.plant.dispose();
-    this.plant = this.plantGen.createRootPlantNode(2);
-    this.scene.add(this.plant.mesh);
-    // Grow plant a bit
-    const initialGrowth = Math.floor(Math.random() * 10);
-    for (let i = 0; i < initialGrowth; ++i) {
-      this.plantGen.growPlant(this.plant);
+    console.log('Regenerating new Plant!');
+    // Cleanup old plant if one exists
+    if (this.plant !== undefined) {
+      this.plant.dispose();
+      if (this.scene !== undefined) {
+        this.scene.remove(this.plant.mesh);
+      }
     }
+    // Regen plant
+    const initialGrowth = 0; // Math.floor(Math.random() * 10);
+    this.plant = this.plantGen.createNewPlant(this.plantRootWidth, this.plantGeneratorSeed, initialGrowth);
+    this.scene.add(this.plant.mesh);
+    console.log('regenerated!');
   }
 
   onGrow() {
