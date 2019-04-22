@@ -1,8 +1,8 @@
 import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
-import { PlantGenerator } from './Generator';
-import { PlantNode } from './Plant';
+import { PlantGenerator } from './Gene';
+import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
 import Prando from 'prando';
@@ -105,9 +105,8 @@ export class AppComponent implements OnInit {
     const plantWidth = this.plant.parentRadius;
     const rng = this.plant.rng;
     rng.reset();
-    const age = this.plant.age;
     this.clearPlant();
-    this.plant = this.plantGen.createNewPlant(plantWidth, rng, age);
+    this.plant = createNewPlant(plantWidth, rng);
     this.scene.add(this.plant.mesh);
     console.log('Reload Plant');
   }
@@ -119,14 +118,14 @@ export class AppComponent implements OnInit {
   }
 
   onGrow() {
-    this.plantGen.growPlant(this.plant);
+    this.plant.grow();
     console.log('Growing plant!');
   }
 
   generateNewPlant() {
     this.clearPlant();
     // Regen plant
-    this.plant = this.plantGen.createNewPlant(2, new Prando(Math.random() * 100), 10);
+    this.plant = createNewPlant(2, new Prando(Math.random() * 100));
     this.scene.add(this.plant.mesh);
     console.log('Generated new Plant!');
   }
