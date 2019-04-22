@@ -89,7 +89,7 @@ export class PlantNode {
         this.age += 1;
         console.log(this.age);
         if (this.children.length > 0) {
-            this.children.forEach(e => this.grow());
+            this.children.forEach(e => e.grow());
         } else { // At the end of a plant
             const pitch = inRange(this.rng.next(), this.gene.pitch);
             // Check threshold for minimum feature size
@@ -131,7 +131,7 @@ export function createNewPlant(lowRadius: number, rng: Prando): PlantNode {
     const n = new PlantNode(0, rng, lowRadius, topRadius, 0);
     n.mesh.translateZ(n.length / 2);
     n.mesh.rotateX(Math.PI / 2);
-    n.mesh.rotateY(Math.PI / 2);
+    // n.mesh.rotateY(Math.PI / 2);
     // Age
     return n;
 }
