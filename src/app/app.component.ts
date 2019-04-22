@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
-import { PlantGenerator } from './Gene';
+import { BranchGene as PlantGene } from './Gene';
 import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
@@ -18,8 +18,6 @@ import Prando from 'prando';
 })
 export class AppComponent implements OnInit {
 
-  private plantGen: PlantGenerator = new PlantGenerator(10);
-
   @ViewChild('canvas') private canvasRef: ElementRef;
 
   private renderer: THREE.WebGLRenderer;
@@ -34,6 +32,8 @@ export class AppComponent implements OnInit {
 
   private cameraRotationX: number = -Math.PI / 2;
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
+
+  private plantGene = new PlantGene(1);
 
   constructor() {
   }
@@ -104,15 +104,20 @@ export class AppComponent implements OnInit {
   updatePlant() { // Rebuild plant reflecting any changes to generator
     const plantWidth = this.plant.parentRadius;
     const rng = this.plant.rng;
+    const age = this.plant.age;
     rng.reset();
     this.clearPlant();
-    this.plant = createNewPlant(plantWidth, rng);
+    this.plant = createNewPlant(this.plantGene, plantWidth, rng);
     this.scene.add(this.plant.mesh);
+    for (let i = 0; i < age; ++i) {
+      this.plant.grow();
+    }
     console.log('Reload Plant');
   }
 
-  newGenerator() {
-    this.plantGen = new PlantGenerator(Math.random() * 100);
+  newSpecies() {
+    const seed = Math.random() * 100;
+    this.plantGene = new PlantGene(seed);
     this.updatePlant();
     console.log('New Plant Generator!');
   }
@@ -125,7 +130,8 @@ export class AppComponent implements OnInit {
   generateNewPlant() {
     this.clearPlant();
     // Regen plant
-    this.plant = createNewPlant(2, new Prando(Math.random() * 100));
+    const rng = new Prando(Math.random())
+    this.plant = createNewPlant(this.plantGene, 2, rng);
     this.scene.add(this.plant.mesh);
     console.log('Generated new Plant!');
   }

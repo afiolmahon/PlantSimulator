@@ -23,21 +23,19 @@ export class PlantNode {
     public age = 0; // track growth cycles
     public mesh: Mesh;
     
-    public gene: BranchGene = new BranchGene();
     public length: number;
     private animationTimer = 0;
     
     private LeafGen: LeafGenerator = new LeafGenerator();
     
-    constructor(public depth: number, public rng: Prando, public parentRadius: number, public radius: number, public offsetAngle: number) {
+    constructor(public gene: BranchGene, public depth: number, public rng: Prando, public parentRadius: number, public radius: number, public offsetAngle: number) {
         this.length = inRange(rng.next(), this.gene.length);
         this.mesh = this.makeBranchMesh(radius, parentRadius, this.length, 'root');
     }
 
-    addSideBranch( branch: Mesh, height: number, radMin: number): void {
-        const sideBranchLength = (height / 1.5) * this.rng.next();
-        const sideBranchMesh = this.makeBranchMesh(0.08,
-             radMin / 4, sideBranchLength, 'side_branch');
+    addSideBranch( branch: Mesh, length: number, radMin: number): void {
+        const sideBranchLength = (length / 1.5) * this.rng.next();
+        const sideBranchMesh = this.makeBranchMesh(0.08, radMin / 4, sideBranchLength, 'side_branch');
         // Add leaf
         const leaf = this.LeafGen.makeLeafMesh();
         leaf.scale.set(0.1, 0.1, 0.1);
@@ -56,8 +54,13 @@ export class PlantNode {
     addChildNode(yRot: number): void {
         const topRadius = this.radius * inRange(this.rng.next(), this.gene.reduction);
         // create & add to parent node
-        const n = new PlantNode(this.depth + 1, this.rng, this.radius, topRadius, yRot);
+        const n = new PlantNode(this.gene, this.depth + 1, this.rng, this.radius, topRadius, yRot);
         this.children.push(n);
+        // Add side twig and leaf
+        if (this.rng.next() >= 0.5) {
+            this.addSideBranch(n.mesh, length, this.radius);
+        }
+        n.mesh.rotateY(Math.PI/4);
         this.mesh.add(n.mesh);
     }
 
@@ -75,10 +78,6 @@ export class PlantNode {
         const topMesh = new Mesh(topGeometry, mat);
         topMesh.translateY(branchMesh.geometry.boundingBox.max.y);
         branchMesh.add(topMesh);
-        // Add side twig and leaf
-        if (this.rng.next() >= 0.5) {
-            this.addSideBranch(branchMesh, length, radMin);
-        }
         // TODO: Fix height offset
         branchMesh.translateY(length);
         return branchMesh;
@@ -103,9 +102,9 @@ export class PlantNode {
     }
 
     generatePlantColor(): Color {
-        return new Color(inRange(this.rng.next(), this.gene.color_r),
-                         inRange(this.rng.next(), this.gene.color_g),
-                         inRange(this.rng.next(), this.gene.color_b));
+        return new Color(inRange(this.rng.next(), this.gene.colorR),
+                         inRange(this.rng.next(), this.gene.colorG),
+                         inRange(this.rng.next(), this.gene.colorB));
     }
 
     // clean up resources not automatically freed (material, geometry)
@@ -125,13 +124,13 @@ export class PlantNode {
  * Create a new trunk PlantNode
  * @param lowRadius: radius of plant trunk
  */
-export function createNewPlant(lowRadius: number, rng: Prando): PlantNode {
+export function createNewPlant(gene: BranchGene, lowRadius: number, rng: Prando): PlantNode {
     // Create Root Node
     const topRadius = lowRadius - inRange(rng.next(), [0.3, 0.5]);
-    const n = new PlantNode(0, rng, lowRadius, topRadius, 0);
+    const n = new PlantNode(gene, 0, rng, lowRadius, topRadius, 0);
     n.mesh.translateZ(n.length / 2);
     n.mesh.rotateX(Math.PI / 2);
-    // n.mesh.rotateY(Math.PI / 2);
+    n.mesh.rotateY(Math.PI / 2);
     // Age
     return n;
 }
