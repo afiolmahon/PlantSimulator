@@ -92,7 +92,7 @@ export class AppComponent implements OnInit {
     if (this.plant !== undefined) {
       this.plant.dispose();
       if (this.scene !== undefined) {
-        this.scene.remove(this.plant.mesh);
+        this.scene.remove(this.plant.branchMesh);
       }
     }
   }
@@ -108,8 +108,8 @@ export class AppComponent implements OnInit {
     rng.reset();
     this.clearPlant();
     this.plant = createNewPlant(this.plantGene, plantWidth, rng);
-    this.scene.add(this.plant.mesh);
-    for (let i = 0; i < age; ++i) {
+    this.scene.add(this.plant.branchMesh);
+    for (let i = 0; i < age; i++) {
       this.plant.grow();
     }
     console.log('Reload Plant');
@@ -130,9 +130,8 @@ export class AppComponent implements OnInit {
   generateNewPlant() {
     this.clearPlant();
     // Regen plant
-    const rng = new Prando(Math.random())
-    this.plant = createNewPlant(this.plantGene, 2, rng);
-    this.scene.add(this.plant.mesh);
+    this.plant = createNewPlant(this.plantGene, 2, new Prando(Math.random()));
+    this.scene.add(this.plant.branchMesh);
     console.log('Generated new Plant!');
   }
 
