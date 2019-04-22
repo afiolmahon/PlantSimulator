@@ -8,6 +8,9 @@ export class BranchGene {
     length: number[] = [3, 5];
     pitch: number[] = [0.2, 0.4];
     reduction: number[] = [0.6, 0.7];
+    color_r: number[] = [0.0, 0.4];
+    color_g: number[] = [0.6, 1.0];
+    color_b: number[] = [0.0, 0.4];
     minRadius = 0.2;
 }
 

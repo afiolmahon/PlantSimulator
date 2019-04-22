@@ -14,26 +14,21 @@ export function rotateBase(mesh: Mesh, angle: number) {
     mesh.translateY(mesh.geometry.boundingBox.max.y);
 }
 
-
 /**
  * Plant Graph Data Structure
  */
 export class PlantNode {
-    private animationTimer = 0;
     public children: PlantNode[] = [];
-
+    
     public age = 0; // track growth cycles
-
-    public BRANCH_COLOR_R: number[] = [0.0, 0.4];
-    public BRANCH_COLOR_G: number[] = [0.6, 1.0];
-    public BRANCH_COLOR_B: number[] = [0.0, 0.4];
     public mesh: Mesh;
-
+    
     public gene: BranchGene = new BranchGene();
-    LeafGen: LeafGenerator = new LeafGenerator();
-
     public length: number;
-
+    private animationTimer = 0;
+    
+    private LeafGen: LeafGenerator = new LeafGenerator();
+    
     constructor(public depth: number, public rng: Prando, public parentRadius: number, public radius: number, public offsetAngle: number) {
         this.length = inRange(rng.next(), this.gene.length);
         this.mesh = this.makeBranchMesh(radius, parentRadius, this.length, 'root');
@@ -57,16 +52,9 @@ export class PlantNode {
 
     /**
      * Create a branch to the child and attach it to the parent node
-     * @param parent the parent node
-     * @param offsetAngle the angle away from the parent (parallel is zero)
-     * @param rotation the rotation of the child about the parent
      */
-    addBranchChildNode(zRot: number, yRot: number): void {
-        // Add branch geometry
+    addChildNode(yRot: number): void {
         const topRadius = this.radius * inRange(this.rng.next(), this.gene.reduction);
-        const branchLength = inRange(this.rng.next(), this.gene.length);
-        const mainBranchMesh = this.makeBranchMesh(topRadius, this.radius, branchLength, 'main_branch');
-
         // create & add to parent node
         const n = new PlantNode(this.depth + 1, this.rng, this.radius, topRadius, yRot);
         this.children.push(n);
@@ -103,22 +91,21 @@ export class PlantNode {
         if (this.children.length > 0) {
             this.children.forEach(e => this.grow());
         } else { // At the end of a plant
-            const roll = Math.PI / 2;
             const pitch = inRange(this.rng.next(), this.gene.pitch);
             // Check threshold for minimum feature size
             if (this.radius >=  this.gene.minRadius) {
                 console.log('grow branches');
-                this.addBranchChildNode(-pitch, roll);
-                this.addBranchChildNode(pitch, roll);
+                this.addChildNode(-pitch);
+                this.addChildNode(pitch);
             }
             console.log('Added Child!');
         }
     }
 
     generatePlantColor(): Color {
-        return new Color(inRange(this.rng.next(), this.BRANCH_COLOR_R),
-                         inRange(this.rng.next(), this.BRANCH_COLOR_G),
-                         inRange(this.rng.next(), this.BRANCH_COLOR_B));
+        return new Color(inRange(this.rng.next(), this.gene.color_r),
+                         inRange(this.rng.next(), this.gene.color_g),
+                         inRange(this.rng.next(), this.gene.color_b));
     }
 
     // clean up resources not automatically freed (material, geometry)
