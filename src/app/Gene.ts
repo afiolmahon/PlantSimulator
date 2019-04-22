@@ -16,6 +16,6 @@ export class BranchGene {
 
     constructor(seed: number) {
         const r: Prando = new Prando(seed);
-        this.length[1] = inRange(r.next(), [5, 10]);  
+        this.length[1] = inRange(r.next(), [5, 10]);
     }
 }

@@ -102,7 +102,7 @@ export class AppComponent implements OnInit {
    */
 
   updatePlant() { // Rebuild plant reflecting any changes to generator
-    const plantWidth = this.plant.parentRadius;
+    const plantWidth = this.plant.radius[0];
     const rng = this.plant.rng;
     const age = this.plant.age;
     rng.reset();
