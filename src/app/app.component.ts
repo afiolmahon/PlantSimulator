@@ -5,6 +5,7 @@ import { PlantGenerator } from './Generator';
 import { PlantNode } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
+import Prando from 'prando';
 
 //    Orbit - left mouse / touch: one-finger move
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
@@ -17,11 +18,7 @@ import { X_AXIS } from './utility';
 })
 export class AppComponent implements OnInit {
 
-  private plantGen: PlantGenerator = new PlantGenerator();
-
-  // Generator Properties
-  @Input() plantGeneratorSeed = 123;
-  @Input() plantRootWidth = 2;
+  private plantGen: PlantGenerator = new PlantGenerator(10);
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -91,25 +88,47 @@ export class AppComponent implements OnInit {
     }());
   }
 
-  generateNewPlant() {
-    console.log('Regenerating new Plant!');
-    // Cleanup old plant if one exists
+  clearPlant() {
     if (this.plant !== undefined) {
       this.plant.dispose();
       if (this.scene !== undefined) {
         this.scene.remove(this.plant.mesh);
       }
     }
-    // Regen plant
-    const initialGrowth = 0; // Math.floor(Math.random() * 10);
-    this.plant = this.plantGen.createNewPlant(this.plantRootWidth, this.plantGeneratorSeed, initialGrowth);
+  }
+
+  /**
+   * Button interactions
+   */
+
+  updatePlant() { // Rebuild plant reflecting any changes to generator
+    const plantWidth = this.plant.parentRadius;
+    const rng = this.plant.rng;
+    rng.reset();
+    const age = this.plant.age;
+    this.clearPlant();
+    this.plant = this.plantGen.createNewPlant(plantWidth, rng, age);
     this.scene.add(this.plant.mesh);
-    console.log('regenerated!');
+    console.log('Reload Plant');
+  }
+
+  newGenerator() {
+    this.plantGen = new PlantGenerator(Math.random() * 100);
+    this.updatePlant();
+    console.log('New Plant Generator!');
   }
 
   onGrow() {
-    console.log('growing plant!');
     this.plantGen.growPlant(this.plant);
+    console.log('Growing plant!');
+  }
+
+  generateNewPlant() {
+    this.clearPlant();
+    // Regen plant
+    this.plant = this.plantGen.createNewPlant(2, new Prando(Math.random() * 100), 10);
+    this.scene.add(this.plant.mesh);
+    console.log('Generated new Plant!');
   }
 
   /**
@@ -120,10 +139,11 @@ export class AppComponent implements OnInit {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camera.updateProjectionMatrix();
   }
-
   onMouseMove(e: MouseEvent) {}
   onMouseUp(_: Event) {}
   onMouseDown(_: Event) {}
-  onScroll(e: WheelEvent) {}
+  onScroll(e: WheelEvent) {
+    this.scene.translateZ(e.deltaX);
+  }
 }
 

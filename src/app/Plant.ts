@@ -1,4 +1,5 @@
 import { Mesh } from 'three';
+import Prando from 'prando';
 
 export function rotateBase(mesh: Mesh, angle: number) {
     mesh.geometry.computeBoundingBox();
@@ -17,11 +18,12 @@ export class PlantNode {
     public age = 0; // track growth cycles
 
     constructor(public depth: number,
-                public seed: number,
-                public startRadius: number,
-                public endRadius: number,
+                public rng: Prando,
+                public parentRadius: number,
+                public radius: number,
                 public mesh: Mesh,
-                public offsetAngle: number) {}
+                public offsetAngle: number) {
+    }
 
     // clean up resources not automatically freed (material, geometry)
     dispose() {
@@ -33,6 +35,6 @@ export class PlantNode {
         this.children.forEach(n => {
             n.animate();
         });
-        this.animationTimer += 0.01;
+        this.animationTimer += 0.02;
     }
 }

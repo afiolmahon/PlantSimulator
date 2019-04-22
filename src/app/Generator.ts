@@ -12,67 +12,76 @@ import { LeafGenerator } from './Leaf';
  */
 function inRange(position: number, range: number[]): number { return range[0] + ( (range[1] - range[0]) * position); }
 
+const BRANCH_MESH_RADIAL_SEGMENTS = 20;
+const BRANCH_MESH_HEIGHT_SEGMENTS = 1;
+
 export class PlantGenerator {
 
     LeafGen: LeafGenerator = new LeafGenerator();
 
     // Geometric Properties
-    public BRANCH_MESH_RADIAL_SEGMENTS = 20;
-    public BRANCH_MESH_HEIGHT_SEGMENTS = 1;
 
     // Branch Properties
-    public BRANCH_LENGTH = [3, 4];
+    public BRANCH_PITCH: number[] = [0.2, 0.4]; // Larger max pitch -> less stalky
+    public BRANCH_LENGTH = [3, 5];
     public BRANCH_RADIUS_REDUCTION: number[] = [0.6, 0.7];
     public BRANCH_RADIUS_MIN = 0.2;
-    public BRANCH_PITCH_MAX: number = Math.PI / 4;
     public BRANCH_COLOR_R: number[] = [0.0, 0.4];
     public BRANCH_COLOR_G: number[] = [0.6, 1.0];
     public BRANCH_COLOR_B: number[] = [0.0, 0.4];
 
-    // Psuedorandom number
-    private rng: Prando;
-
-    constructor() {}
-
-    private rand(): number { return this.rng.next(); }
-
-    generatePlantColor(): Color {
-        return new Color(inRange(this.rand(), this.BRANCH_COLOR_R),
-                         inRange(this.rand(), this.BRANCH_COLOR_G),
-                         inRange(this.rand(), this.BRANCH_COLOR_B));
+    /**
+     * Construct probabilities
+     */
+    constructor(speciesSeed: number) {
+        const r: Prando = new Prando(speciesSeed);
+        // this.BRANCH_RADIUS_REDUCTION[0] = inRange(r.next(), [0.3, 0.4]); // largest reduction
+        // this.BRANCH_RADIUS_REDUCTION[1] = inRange(r.next(), [0.8, 0.9]); // min reduction
+        // this.BRANCH_PITCH[0] = Math.PI / 8;
+        // this.BRANCH_PITCH[1] = inRange(r.next(), [Math.PI / 4, (Math.PI / 2) - 0.2]);
+        // this.BRANCH_LENGTH[0] = inRange(r.next(), [1, 4]);
+        // this.BRANCH_LENGTH[1] = this.BRANCH_LENGTH[0] + inRange(r.next(), [0, 5]);
     }
 
-    makeBranchMesh(radMin: number, radMax: number, height: number, branchColor: Color, name: string): Mesh {
+    generatePlantColor(rng: Prando): Color {
+        return new Color(inRange(rng.next(), this.BRANCH_COLOR_R),
+                         inRange(rng.next(), this.BRANCH_COLOR_G),
+                         inRange(rng.next(), this.BRANCH_COLOR_B));
+    }
+
+    addSideBranch(rng: Prando, branch: Mesh, height: number, radMin: number): void {
+        const sideBranchLength = (height / 1.5) * rng.next();
+        const sideBranchMesh = this.makeBranchMesh(rng, 0.08, radMin / 4, sideBranchLength, this.generatePlantColor(rng), 'side_branch');
+        // Add leaf
+        const leaf = this.LeafGen.makeLeafMesh();
+        leaf.scale.set(0.1, 0.1, 0.1);
+        sideBranchMesh.add(leaf);
+        leaf.translateY(sideBranchLength / 2);
+        // Attach side branch
+        sideBranchMesh.position.set(-sideBranchLength / 2, 0, 0);
+        sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI / 2);
+        sideBranchMesh.rotateOnAxis(Y_AXIS, rng.next() * (Math.PI / 2));
+        branch.add(sideBranchMesh);
+    }
+
+    makeBranchMesh(rng: Prando, radMin: number, radMax: number, height: number, branchColor: Color, name: string): Mesh {
         const mat = new MeshStandardMaterial({color: branchColor, flatShading: false});
         // Cyliner
         const branchGeometry = new CylinderBufferGeometry(radMin, radMax, height,
-            this.BRANCH_MESH_RADIAL_SEGMENTS, this.BRANCH_MESH_HEIGHT_SEGMENTS, false);
+                                                          BRANCH_MESH_RADIAL_SEGMENTS,
+                                                          BRANCH_MESH_HEIGHT_SEGMENTS, false);
         const branchMesh = new Mesh(branchGeometry, mat);
         branchMesh.name = name;
         branchMesh.geometry.computeBoundingBox();
         // Top piece
-        const topGeometry = new SphereBufferGeometry(radMin, this.BRANCH_MESH_RADIAL_SEGMENTS);
+        const topGeometry = new SphereBufferGeometry(radMin, BRANCH_MESH_RADIAL_SEGMENTS);
         const topMesh = new Mesh(topGeometry, mat);
         topMesh.translateY(branchMesh.geometry.boundingBox.max.y);
         branchMesh.add(topMesh);
         // Add side twig and leaf
-        if (this.rand() >= 0.5) {
-            const sideBranchLength = (height / 1.5) * this.rand();
-            const sideBranchMesh = this.makeBranchMesh(0.08, radMin / 4, sideBranchLength,
-                this.generatePlantColor(), 'side_branch');
-            // Add leaf
-            const leaf = this.LeafGen.makeLeafMesh();
-            leaf.scale.set(0.1, 0.1, 0.1);
-            sideBranchMesh.add(leaf);
-            leaf.translateY(sideBranchLength / 2);
-            // Attach side branch
-            sideBranchMesh.position.set(-sideBranchLength / 2, 0, 0);
-            sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI / 2);
-            sideBranchMesh.rotateOnAxis(Y_AXIS, this.rand() * (Math.PI / 2));
-            branchMesh.add(sideBranchMesh);
+        if (rng.next() >= 0.5) {
+            this.addSideBranch(rng, branchMesh, height, radMin);
         }
-        branchMesh.position.set(0, height, 0);
-
         return branchMesh;
     }
 
@@ -80,15 +89,15 @@ export class PlantGenerator {
      * Create a new trunk PlantNode
      * @param lowRadius: radius of plant trunk
      */
-    createNewPlant(lowRadius: number, seed: number, age: number): PlantNode {
+    createNewPlant(lowRadius: number, rng: Prando, age: number): PlantNode {
         // Create Root Node
-        this.rng = new Prando(seed);
-        const topRadius = lowRadius - inRange(this.rand(), [0.3, 0.5]);
-        const rootLength = inRange(this.rand(), this.BRANCH_LENGTH);
-        const mesh = this.makeBranchMesh(topRadius, lowRadius, rootLength, this.generatePlantColor(), 'root');
-        const n = new PlantNode(0, seed, lowRadius, topRadius, mesh, 0);
+        const topRadius = lowRadius - inRange(rng.next(), [0.3, 0.5]);
+        const rootLength = inRange(rng.next(), this.BRANCH_LENGTH);
+        const mesh = this.makeBranchMesh(rng, topRadius, lowRadius, rootLength, this.generatePlantColor(rng), 'root');
+        const n = new PlantNode(0, rng, lowRadius, topRadius, mesh, 0);
         n.mesh.translateZ(rootLength / 2);
         n.mesh.rotateX(Math.PI / 2);
+        n.mesh.rotateY(Math.PI / 2);
         // Age
         for (let i = 0; i < age; ++i) { this.growPlant(n); }
         return n;
@@ -104,10 +113,10 @@ export class PlantGenerator {
         if (node.children.length > 0) {
             node.children.forEach(e => { this.growPlant(e); });
         } else { // At the end of a plant
-            const pitch = Math.PI / 4;
             const roll = Math.PI / 2;
+            const pitch = inRange(node.rng.next(), this.BRANCH_PITCH);
             // Check threshold for minimum feature size
-            if (node.endRadius >=  this.BRANCH_RADIUS_MIN) {
+            if (node.radius >=  this.BRANCH_RADIUS_MIN) {
                 console.log('grow branches');
                 this.addBranchChildNode(node, -pitch, roll);
                 this.addBranchChildNode(node, pitch, roll);
@@ -124,12 +133,15 @@ export class PlantGenerator {
      */
     addBranchChildNode(parent: PlantNode, zRot: number, yRot: number): void {
         // Add branch geometry
-        const topRadius = parent.endRadius * inRange(this.rand(), this.BRANCH_RADIUS_REDUCTION);
-        const branchLength = inRange(this.rand(), this.BRANCH_LENGTH);
-        const mainBranchMesh = this.makeBranchMesh(topRadius, parent.endRadius, branchLength, this.generatePlantColor(), 'main_branch');
+        const topRadius = parent.radius * inRange(parent.rng.next(), this.BRANCH_RADIUS_REDUCTION);
+        const branchLength = inRange(parent.rng.next(), this.BRANCH_LENGTH);
+        const mainBranchMesh = this.makeBranchMesh(parent.rng, topRadius, parent.radius, branchLength,
+            this.generatePlantColor(parent.rng), 'main_branch');
         mainBranchMesh.rotateY(yRot);
+        // TODO: Fix height offset
+        mainBranchMesh.translateY(branchLength);
         // create & add to parent node
-        const n = new PlantNode(parent.depth + 1, parent.seed, parent.endRadius, topRadius, mainBranchMesh, zRot);
+        const n = new PlantNode(parent.depth + 1, parent.rng, parent.radius, topRadius, mainBranchMesh, zRot);
         parent.children.push(n);
         parent.mesh.add(n.mesh);
     }
