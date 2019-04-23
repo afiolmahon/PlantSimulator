@@ -19,3 +19,16 @@ export class BranchGene {
         this.length[1] = inRange(r.next(), [5, 10]);
     }
 }
+
+export class LeafGene{
+
+    colorR: number[] = [0.6, 0.8];
+    colorG: number[] = [0.2, 0.6];
+    colorB: number[] = [0.0, 0.4];
+
+    constructor(cR: number[], cG: number[], cB: number[]) {
+        this.colorR = cR;
+        this.colorG = cG;
+        this.colorB = cB;
+    }
+}

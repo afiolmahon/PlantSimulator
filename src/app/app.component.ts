@@ -146,10 +146,6 @@ export class AppComponent implements OnInit {
     }
     console.log('Generated new Plant!');
   }
-  onLeaf(){
-    this.plantGen.addLeafNode(this.plant);
-  }
-
   /**
    * UI Event Handlers
    */

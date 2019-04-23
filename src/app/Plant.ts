@@ -2,7 +2,7 @@ import { Mesh, Color, MeshStandardMaterial, CylinderBufferGeometry, SphereBuffer
 import Prando from 'prando';
 import { Z_AXIS, Y_AXIS, inRange, X_AXIS } from './utility';
 import { LeafGenerator } from './Leaf';
-import { BranchGene } from './Gene';
+import { BranchGene, LeafGene} from './Gene';
 
 const BRANCH_MESH_RADIAL_SEGMENTS = 20;
 const BRANCH_MESH_HEIGHT_SEGMENTS = 1;
@@ -12,6 +12,9 @@ const BRANCH_MESH_HEIGHT_SEGMENTS = 1;
  */
 export class PlantNode {
     private LeafGen: LeafGenerator = new LeafGenerator();
+
+    private Fall: LeafGene = new LeafGene([0.6, 0.8], [0.2, 0.6], [0.0, 0.4]);
+
     public children: PlantNode[] = [];
     public age = 0; // track growth cycles
     // Geometric Properties
@@ -28,14 +31,24 @@ export class PlantNode {
         const sideBranchLength = (length / 1.5) * this.rng.next();
         const sideBranchMesh = this.makeBranchMesh([radMin / 4, 0.08], sideBranchLength, 'side_branch');
         // Add leaf
-        const leaf = this.LeafGen.makeLeafMesh();
-        leaf.scale.set(0.1, 0.1, 0.1);
-        leaf.translateY(sideBranchLength / 2);
+            for(var j = 3; j > 0; j--){ //Depth of the branch
+            for (var i = 0; i < 8 ; i++) { //Rotation around the branch
+                let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor(this.Fall));
+                sideBranchMesh.add(leaf); 
+                //Tip of branch
+                    //leaf.translateY(sideBranchLength - .4);
+                leaf.translateY(sideBranchLength/2 - (.4 * j));
+                leaf.rotateZ((i * 15));
+                leaf.rotateY((i * 15));   
+            }
+        }
+        let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor(this.Fall));
+        leaf.translateY(sideBranchLength - .4);
+        sideBranchMesh.add(leaf);
         // Attach side branch
-        sideBranchMesh.position.set(-sideBranchLength / 2, 0, 0);
+        sideBranchMesh.position.set(-sideBranchLength / 3, 0, 0);
         sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI / 2);
         sideBranchMesh.rotateOnAxis(Y_AXIS, this.rng.next() * (Math.PI / 2));
-        sideBranchMesh.add(leaf);
         // Connect
         branch.add(sideBranchMesh);
     }
@@ -96,6 +109,11 @@ export class PlantNode {
         return new Color(inRange(this.rng.next(), this.gene.colorR),
                          inRange(this.rng.next(), this.gene.colorG),
                          inRange(this.rng.next(), this.gene.colorB));
+    }
+    generateLeafColor(season: LeafGene): Color{
+        return new Color(inRange(this.rng.next(), season.colorR),
+                         inRange(this.rng.next(), season.colorG),
+                         inRange(this.rng.next(), season.colorB));   
     }
 
     // clean up resources not automatically freed (material, geometry)
