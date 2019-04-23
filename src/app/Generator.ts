@@ -29,6 +29,10 @@ export class PlantGenerator {
     public branch_color_g: number[] = [0.6, 1.0];
     public branch_color_b: number[] = [0.0, 0.4];
 
+    public leaf_color_r: number[] = [0.6, 0.8];
+    public leaf_color_g: number[] = [0.2, 0.6];
+    public leaf_color_b: number[] = [0.0, 0.4];
+
     // Psuedorandom number
     private rng: Prando;
     
@@ -42,6 +46,12 @@ export class PlantGenerator {
         return new Color(inRange(this.rand(), this.branch_color_r),
                          inRange(this.rand(), this.branch_color_g),
                          inRange(this.rand(), this.branch_color_b));
+    }
+
+    generateLeafColor(): Color{
+         return new Color(inRange(this.rand(), this.leaf_color_r),
+                         inRange(this.rand(), this.leaf_color_g),
+                         inRange(this.rand(), this.leaf_color_b));   
     }
 
     makeBranchMesh(radius_min: number, radius_max: number, height: number, color: Color, name: string): Mesh {
@@ -119,11 +129,18 @@ export class PlantGenerator {
         if(branchProb == 0) {
             let sideBranchLength = this.branch_length_max/1.5;
             let sideBranchMesh = this.makeBranchMesh(0.08, parent.endRadius/4, sideBranchLength, this.generatePlantColor(), "side_branch");//new Mesh(sideBranchGeo, new MeshLambertMaterial({color: GeneratePlantColor() }));
-            // Add leaf
-            let leaf = this.LeafGen.makeLeafMesh();
-            sideBranchMesh.add(leaf); 
-            leaf.translateY(sideBranchLength/2);
-            leaf.scale.set(0.1,0.1,0.1);
+            /*// Add leaf
+            for(var j = 3; j > 0; j--){ //Depth of the branch
+            for (var i = 0; i < 8 ; i++) { //Rotation around the branch
+                let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor());
+                sideBranchMesh.add(leaf); 
+                //Tip of branch
+                    //leaf.translateY(sideBranchLength - .4);
+                leaf.translateY(sideBranchLength/2 - (.4 * j));
+                leaf.rotateZ(45 + (i * 15));
+                //leaf.rotateY(90);   
+            }
+        }*/
             sideBranchMesh.position.set(-this.branch_length_max/3, 0, 0);
             sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI/2);
             sideBranchMesh.rotateOnAxis(Y_AXIS, this.rand() * (Math.PI/2));  
@@ -136,5 +153,47 @@ export class PlantGenerator {
         let n = new PlantNode(parent.depth + 1, parent.endRadius, topRadius, mainBranchMesh, offsetAngle);
         parent.children.push(n);
         parent.mesh.add(n.mesh);
+    }
+
+    populateLeaves(node: PlantNode){
+        // Add leaf
+            for(var j = 3; j > 0; j--){ //Depth of the branch
+            for (var i = 0; i < 8 ; i++) { //Rotation around the branch
+                let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor());
+                node.mesh.add(leaf); 
+                //Tip of branch
+                    //leaf.translateY(sideBranchLength - .4);
+                leaf.translateY(this.branch_length_max/2 - (.4 * j));
+                leaf.rotateZ(45 + (i * 15));
+                //leaf.rotateY(90);   
+            }
+        }
+    }
+
+    addLeafNode(node: PlantNode){
+        // Try to add a node at all leaves
+        /*if(node.mesh.name == "side_branch"){
+             // Add leaf
+            for(var j = 3; j > 0; j--){ //Depth of the branch
+            for (var i = 0; i < 8 ; i++) { //Rotation around the branch
+                let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor());
+                node.mesh.add(leaf); 
+                //Tip of branch
+                    //leaf.translateY(sideBranchLength - .4);
+                leaf.translateY(this.branch_length_max/2 - (.4 * j));
+                leaf.rotateZ(45 + (i * 15));
+                //leaf.rotateY(90);   
+            }
+        }
+        }*/
+        if(node.mesh.name == "main_branch"){
+             
+        }
+        if (node.children.length > 0) {
+            //this.populateLeaves(node);
+            node.children.forEach(e => {this.addLeafNode(e)});
+        } else { // Main Branch
+            console.log(node.mesh.name + "\n");
+        }
     }
 }

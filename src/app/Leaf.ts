@@ -1,4 +1,4 @@
-import { Mesh, Color } from 'three';
+import { Mesh, Color, MeshStandardMaterial  } from 'three';
 import { Shape, ShapeBufferGeometry, MeshPhongMaterial, DoubleSide} from 'three';
 
 export function GenerateLeafColor(): Color {
@@ -12,14 +12,17 @@ export class LeafGenerator {
 
     constructor() {}
 
-    makeLeafMesh(): Mesh {
+    makeLeafMesh(color: Color): Mesh {
         var x = 0, y = 0;
         var leafShape = new Shape();
+        let mat = new MeshStandardMaterial({color: color, flatShading: true});
         leafShape.moveTo( x, y);
-        leafShape.bezierCurveTo( x + 15, y + 15, x-15, y + 15, x, y);
+        leafShape.bezierCurveTo( x - 15, y - 15, x+15, y - 15, x, y);
         //leafShape.bezierCurveTo(x, y + 15, x, y + 15, x, y);
         var geo = new ShapeBufferGeometry(leafShape);
-        var mesh = new Mesh(geo, new MeshPhongMaterial({side: DoubleSide}));
+        var mesh = new Mesh(geo, mat);
+        mesh.scale.set(0.05,0.05,0.05);
+
         return mesh;
     }
 
