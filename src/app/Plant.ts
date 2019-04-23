@@ -42,17 +42,15 @@ export class PlantNode {
     addSideBranch(branch: Mesh, length: number, radMin: number): void {
         const sideBranchLength = (length / 1.5) * this.rng.next();
         const sideBranchMesh = this.makeBranchMesh([radMin / 4, 0.08], sideBranchLength, 'side_branch');
+        // Attach side branch
+        sideBranchMesh.rotateZ(Math.PI / 2);
+        // sideBranchMesh.rotateY(this.rng.next() * (Math.PI / 2));
+        sideBranchMesh.translateY((sideBranchLength / 2) + radMin);
+        branch.add(sideBranchMesh);
         // Add leaf
         const leaf = this.LeafGen.makeLeafMesh();
         leaf.scale.set(0.1, 0.1, 0.1);
-        leaf.translateY(sideBranchLength / 2);
-        // Attach side branch
-        sideBranchMesh.position.set(-sideBranchLength / 2, 0, 0);
-        sideBranchMesh.rotateOnAxis(Z_AXIS, Math.PI / 2);
-        sideBranchMesh.rotateOnAxis(Y_AXIS, this.rng.next() * (Math.PI / 2));
         sideBranchMesh.add(leaf);
-        // Connect
-        branch.add(sideBranchMesh);
     }
 
     /**
@@ -63,7 +61,9 @@ export class PlantNode {
         // Create & add to parent node
         const n = new PlantNode(this.gene, this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length);
         // Add side twig and leaf
-        if (this.rng.next() >= 0.5) { this.addSideBranch(n.branchMesh, length, this.radius[1]); }
+        if (this.rng.next() >= 0.5) {
+            this.addSideBranch(n.branchMesh, length, this.radius[1]);
+        }
         // Position & connect to graph
         n.branchMesh.rotateY((Math.PI / 2) - (0.2 * this.rng.next()));
         n.branchMesh.translateY(n.parentLength / 2);
@@ -136,6 +136,5 @@ export function createNewPlant(gene: BranchGene, bottomRadius: number, rng: Pran
     const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius], 0, 0);
     n.branchMesh.translateZ(n.length / 2);          // Adjust Position
     n.branchMesh.rotateX(Math.PI / 2);              // Set plant upright
-    n.branchMesh.rotateY(Math.PI * 2 * rng.next()); // Rotate arbitrarily
     return n;
 }
