@@ -159,7 +159,7 @@ export class AppComponent implements OnInit {
   onMouseUp(_: Event) {}
   onMouseDown(_: Event) {}
   onScroll(e: WheelEvent) {
-    this.scene.translateZ(e.deltaX);
+    this.scene.translateZ(e.deltaY * 0.05);
   }
 }
 
