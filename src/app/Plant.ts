@@ -20,6 +20,8 @@ export class PlantNode {
     public branchMesh: Mesh;
 
     private mat: Material[] = [];
+
+    // tslint:disable-next-line: deprecation
     private geo: BufferGeometry[] = [];
 
     constructor(public gene: BranchGene, public depth: number, public rng: Prando,
@@ -129,10 +131,11 @@ export class PlantNode {
  * @param bottomRadius: radius of plant trunk
  */
 export function createNewPlant(gene: BranchGene, bottomRadius: number, rng: Prando): PlantNode {
-    // Create Root Node
+    // Create root node for tree
     const topRadius = bottomRadius - inRange(rng.next(), [0.3, 0.5]);
     const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius], 0, 0);
-    n.branchMesh.translateZ(n.length / 2);
-    n.branchMesh.rotateX(Math.PI / 2); // Set plant upright
+    n.branchMesh.translateZ(n.length / 2);          // Adjust Position
+    n.branchMesh.rotateX(Math.PI / 2);              // Set plant upright
+    n.branchMesh.rotateY(Math.PI * 2 * rng.next()); // Rotate arbitrarily
     return n;
 }
