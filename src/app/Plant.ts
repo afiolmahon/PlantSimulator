@@ -1,18 +1,11 @@
 import { Mesh, Color, MeshStandardMaterial, CylinderBufferGeometry, SphereBufferGeometry } from 'three';
 import Prando from 'prando';
-import { Z_AXIS, Y_AXIS, inRange } from './utility';
+import { Z_AXIS, Y_AXIS, inRange, X_AXIS } from './utility';
 import { LeafGenerator } from './Leaf';
 import { BranchGene } from './Gene';
 
 const BRANCH_MESH_RADIAL_SEGMENTS = 20;
 const BRANCH_MESH_HEIGHT_SEGMENTS = 1;
-
-export function rotateBase(mesh: Mesh, angle: number) {
-    mesh.geometry.computeBoundingBox();
-    mesh.translateY(-mesh.geometry.boundingBox.max.y);
-    mesh.rotation.z = angle;
-    mesh.translateY(mesh.geometry.boundingBox.max.y);
-}
 
 /**
  * Plant Graph Data Structure
@@ -21,13 +14,12 @@ export class PlantNode {
     private LeafGen: LeafGenerator = new LeafGenerator();
     public children: PlantNode[] = [];
     public age = 0; // track growth cycles
-    private animationTimer = 0;
     // Geometric Properties
     public branchMesh: Mesh;
     public length: number;
-    public yRotation = 0; // yOffset from parent axis
 
-    constructor(public gene: BranchGene, public depth: number, public rng: Prando, public radius: number[]) {
+    constructor(public gene: BranchGene, public depth: number, public rng: Prando,
+                public radius: number[], public yRot: number, public parentLength: number) {
         this.length = inRange(rng.next(), this.gene.length);
         this.branchMesh = this.makeBranchMesh(radius, this.length, 'root');
     }
@@ -53,16 +45,16 @@ export class PlantNode {
      */
     addChildNode(yRot: number): void {
         const topRadius = this.radius[1] * inRange(this.rng.next(), this.gene.reduction);
-        // create & add to parent node
-        const n = new PlantNode(this.gene, this.depth + 1, this.rng, [this.radius[1], topRadius]);
-        n.yRotation = yRot;
-        this.children.push(n);
+        // Create & add to parent node
+        const n = new PlantNode(this.gene, this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length);
         // Add side twig and leaf
-        if (this.rng.next() >= 0.5) {
-            this.addSideBranch(n.branchMesh, length, this.radius[1]);
-        }
-        n.branchMesh.rotateY(Math.PI / 4);
+        if (this.rng.next() >= 0.5) { this.addSideBranch(n.branchMesh, length, this.radius[1]); }
+        // Position & connect to graph
+        n.branchMesh.translateY(n.parentLength / 2);
+        n.branchMesh.rotation.z = yRot;
+        n.branchMesh.translateY(n.length / 2);
         this.branchMesh.add(n.branchMesh);
+        this.children.push(n);
     }
 
     makeBranchMesh(radius: number[], length: number, name: string): Mesh {
@@ -72,15 +64,13 @@ export class PlantNode {
             BRANCH_MESH_RADIAL_SEGMENTS,
             BRANCH_MESH_HEIGHT_SEGMENTS, false);
         const branchMesh = new Mesh(branchGeometry, mat);
-        branchMesh.name = name;
         branchMesh.geometry.computeBoundingBox();
+        branchMesh.name = name;
         // Top piece
         const topGeometry = new SphereBufferGeometry(radius[1], BRANCH_MESH_RADIAL_SEGMENTS);
         const topMesh = new Mesh(topGeometry, mat);
-        topMesh.translateY(branchMesh.geometry.boundingBox.max.y);
+        topMesh.translateY(length / 2);
         branchMesh.add(topMesh);
-        // TODO: Fix height offset
-        branchMesh.translateY(length);
         return branchMesh;
     }
 
@@ -91,12 +81,12 @@ export class PlantNode {
         if (this.children.length > 0) {
             this.children.forEach(e => e.grow());
         } else { // At the end of a plant
-            const pitch = inRange(this.rng.next(), this.gene.pitch);
+            const yRotation = inRange(this.rng.next(), this.gene.pitch);
             // Check threshold for minimum feature size
             if (this.radius[1] >= this.gene.minRadius) {
                 console.log('grow branches');
-                this.addChildNode(-pitch);
-                this.addChildNode(pitch);
+                this.addChildNode(-yRotation);
+                this.addChildNode(yRotation);
             }
             console.log('Added Child!');
         }
@@ -111,13 +101,15 @@ export class PlantNode {
     // clean up resources not automatically freed (material, geometry)
     dispose() { }
 
-    animate() {
-        const angle: number = (Math.PI / 60) * Math.sin(this.animationTimer) + this.yRotation;
-        rotateBase(this.branchMesh, angle);
+    animate(timer: number) {
+        const angle: number = (Math.PI / 60) * Math.sin(timer);
+        this.branchMesh.translateY(-this.length / 2);
+        this.branchMesh.rotation.z = angle + this.yRot;
+        this.branchMesh.translateY(this.length / 2);
+        // rotateBase(this.branchMesh, angle);
         this.children.forEach(n => {
-            n.animate();
+            n.animate(timer);
         });
-        this.animationTimer += 0.02;
     }
 }
 
@@ -128,9 +120,9 @@ export class PlantNode {
 export function createNewPlant(gene: BranchGene, bottomRadius: number, rng: Prando): PlantNode {
     // Create Root Node
     const topRadius = bottomRadius - inRange(rng.next(), [0.3, 0.5]);
-    const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius]);
+    const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius], 0, 0);
     n.branchMesh.translateZ(n.length / 2);
-    n.branchMesh.rotateX(Math.PI / 2);
-    n.branchMesh.rotateY(Math.PI / 2);
+    n.branchMesh.rotateX(Math.PI / 2); // Set plant upright
+    // n.branchMesh.rotateY(Math.PI / 2);
     return n;
 }

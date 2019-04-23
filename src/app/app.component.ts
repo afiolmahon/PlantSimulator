@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
-import { BranchGene as PlantGene } from './Gene';
+import { BranchGene } from './Gene';
 import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
@@ -33,7 +33,9 @@ export class AppComponent implements OnInit {
   private cameraRotationX: number = -Math.PI / 2;
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
-  private plantGene = new PlantGene(1);
+  private plantGene = new BranchGene(1);
+
+  private animationTimer = 0;
 
   constructor() {
   }
@@ -58,7 +60,7 @@ export class AppComponent implements OnInit {
     this.scene.add(this.floor);
     this.generateNewPlant();
     // Lighting
-    this.scene.add(new AmbientLight(0x444444));
+    this.scene.add(new AmbientLight(0x666666));
     this.pointLight.position.set(20, -50, 50);
     this.scene.add(this.pointLight);
     // Camera
@@ -82,33 +84,40 @@ export class AppComponent implements OnInit {
 
     const component: AppComponent = this;
     (function render() {
-      component.plant.animate();
+      component.plant.animate(component.animationTimer);
+      component.animationTimer += 0.02;
       component.renderer.render(component.scene, component.camera);
       requestAnimationFrame(render);
     }());
   }
 
-  clearPlant() {
+  replacePlant(newPlant: PlantNode) {
+    // Remove old plant
     if (this.plant !== undefined) {
       this.plant.dispose();
       if (this.scene !== undefined) {
         this.scene.remove(this.plant.branchMesh);
       }
     }
+    // Configure new one
+    this.plant = newPlant;
+    this.scene.add(newPlant.branchMesh);
   }
+
 
   /**
    * Button interactions
    */
 
   updatePlant() { // Rebuild plant reflecting any changes to generator
+    // Get save important old plant params
     const plantWidth = this.plant.radius[0];
-    const rng = this.plant.rng;
     const age = this.plant.age;
+    const rng = this.plant.rng;
     rng.reset();
-    this.clearPlant();
-    this.plant = createNewPlant(this.plantGene, plantWidth, rng);
-    this.scene.add(this.plant.branchMesh);
+    // Replace plant and grow to previous age
+    const p = createNewPlant(this.plantGene, plantWidth, rng);
+    this.replacePlant(p);
     for (let i = 0; i < age; i++) {
       this.plant.grow();
     }
@@ -117,7 +126,7 @@ export class AppComponent implements OnInit {
 
   newSpecies() {
     const seed = Math.random() * 100;
-    this.plantGene = new PlantGene(seed);
+    this.plantGene = new BranchGene(seed);
     this.updatePlant();
     console.log('New Plant Generator!');
   }
@@ -128,10 +137,13 @@ export class AppComponent implements OnInit {
   }
 
   generateNewPlant() {
-    this.clearPlant();
     // Regen plant
-    this.plant = createNewPlant(this.plantGene, 2, new Prando(Math.random()));
-    this.scene.add(this.plant.branchMesh);
+    const rng = new Prando(Math.random() * 100000);
+    const newPlant = createNewPlant(this.plantGene, 2, rng);
+    this.replacePlant(newPlant);
+    for (let i = 0; i < 1; ++i) {
+      this.plant.grow();
+    }
     console.log('Generated new Plant!');
   }
 
