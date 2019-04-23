@@ -141,7 +141,7 @@ export class AppComponent implements OnInit {
     const rng = new Prando(Math.random() * 100000);
     const newPlant = createNewPlant(this.plantGene, 2, rng);
     this.replacePlant(newPlant);
-    for (let i = 0; i < 1; ++i) {
+    for (let i = 0; i < 10; ++i) {
       this.plant.grow();
     }
     console.log('Generated new Plant!');
