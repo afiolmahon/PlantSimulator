@@ -6,6 +6,7 @@ import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
 import Prando from 'prando';
+import { BoxBufferGeometry } from 'three';
 
 //    Orbit - left mouse / touch: one-finger move
 //    Zoom - middle mouse, or mousewheel / touch: two-finger spread or squish
@@ -27,7 +28,7 @@ export class AppComponent implements OnInit {
   // 3D components
   private scene: THREE.Scene;
   private pointLight = new PointLight(0xAA8888);
-  private floor: Mesh = new Mesh(new PlaneBufferGeometry(80, 80), new MeshLambertMaterial({color: 0x994C00}));
+  private floor: Mesh = new Mesh(new BoxBufferGeometry(20, 20, 10), new MeshLambertMaterial({color: 0x994C00}));
   private plant: PlantNode;
 
   private cameraRotationX: number = -Math.PI / 2;
@@ -58,6 +59,7 @@ export class AppComponent implements OnInit {
     this.scene.background = new THREE.Color(0x54a1ff);
     // Mesh
     this.scene.add(this.floor);
+    this.floor.translateZ(-5.5);
     this.generateNewPlant();
     // Lighting
     this.scene.add(new AmbientLight(0x666666));
@@ -141,7 +143,7 @@ export class AppComponent implements OnInit {
     const rng = new Prando(Math.random() * 100000);
     const newPlant = createNewPlant(this.plantGene, 2, rng);
     this.replacePlant(newPlant);
-    for (let i = 0; i < 1; ++i) {
+    for (let i = 0; i < 10; ++i) {
       this.plant.grow();
     }
     console.log('Generated new Plant!');
