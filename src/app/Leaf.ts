@@ -8,24 +8,38 @@ export function GenerateLeafColor(): Color {
     return new Color(r1 * 0.4, r2 * 0.4 + 0.6, r3 * 0.4);
 }
 
-export class LeafGenerator {
 
-    constructor() {}
+export class LeafNode {
+    public leafMesh: Mesh;
 
-    makeLeafMesh(color: Color): Mesh {
+    constructor(color: Color, name: string) {
+        this.leafMesh = this.makeLeafMesh(color,name);
+
+
+    }
+    changeColor(color: Color){
+        let mat = new MeshStandardMaterial({color: color, flatShading: true});
+        this.leafMesh = new Mesh(this.leafMesh.geometry, mat);
+    }
+    makeLeafMesh(color: Color, name: string): Mesh {
         var x = 0, y = 0;
+        var v = 15;
         var leafShape = new Shape();
         let mat = new MeshStandardMaterial({color: color, flatShading: true});
         leafShape.moveTo( x, y);
-        leafShape.bezierCurveTo( x - 15, y - 15, x+15, y - 15, x, y);
+        leafShape.bezierCurveTo( x - v, y - v, x + v, y - v, x, y);
         //leafShape.bezierCurveTo(x, y + 15, x, y + 15, x, y);
         var geo = new ShapeBufferGeometry(leafShape);
         var mesh = new Mesh(geo, mat);
-        mesh.scale.set(0.05,0.05,0.05);
+        mesh.name = name;
+        mesh.scale.set(0.08,0.08,0.08);
 
         return mesh;
     }
-
+    dispose(){
+        this.leafMesh.geometry.dispose();
+        this.leafMesh.remove();
+    }
     ShowLeaf(): void{
         
         /*var x = 0, y = 0;

@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
-import { BranchGene } from './Gene';
+import { BranchGene, LeafGene } from './Gene';
 import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
@@ -18,6 +18,12 @@ import { BoxBufferGeometry } from 'three';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+    private Fall: LeafGene = new LeafGene([0.8, 1.0], [0.2, 0.6], [0.0, 0.4]);
+    private Winter: LeafGene = new LeafGene([0.0, 0.2], [0.4, 0.8], [0.8, 1.0]);
+    private Summer: LeafGene = new LeafGene([0.7, 1.0], [1.0, 1.0], [0.0, 0.0]);
+
+    private Season: LeafGene = this.Fall;
+
 
   @ViewChild('canvas') private canvasRef: ElementRef;
 
@@ -112,6 +118,7 @@ export class AppComponent implements OnInit {
    */
 
   updatePlant() { // Rebuild plant reflecting any changes to generator
+   // this.removeLeaves();
     // Get save important old plant params
     const plantWidth = this.plant.radius[0];
     const age = this.plant.age;
@@ -148,6 +155,33 @@ export class AppComponent implements OnInit {
     }
     console.log('Generated new Plant!');
   }
+
+  addLeaves(){
+    this.removeLeaves();
+    this.plant.addLeavesToAll(this.Season);
+  }
+  removeLeaves(){
+    this.plant.removeLeaves();
+    this.updatePlant();
+  }
+  setFall(){
+    this.removeLeaves();
+    this.Season = this.Fall;
+    this.addLeaves();
+
+  }
+  setWinter(){
+    this.removeLeaves();
+    this.Season = this.Winter;
+    this.addLeaves();
+  }
+  setSummer(){
+    this.removeLeaves();
+    this.Season = this.Summer;
+    this.addLeaves();
+  }
+
+
   /**
    * UI Event Handlers
    */

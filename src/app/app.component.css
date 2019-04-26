@@ -11,3 +11,7 @@ canvas {
 	/* z-index: 99; */
 	display:block;
 }
+#seasons{
+	position: absolute;
+	 margin-top: -3%; 
+}

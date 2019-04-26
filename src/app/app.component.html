@@ -2,7 +2,7 @@
 <div (window:resize)="onWindowResize($event)" (mousedown)="onMouseDown($event)" (mousemove)="onMouseMove($event)" (mouseup)="onMouseUp($event)" (wheel)="onScroll($event)">
     <div id="info">
         <div class="container">
-            <div class="col-lg-4">
+            <div class="col-lg-5">
                 <!-- <div class="form-group">
                     <label>seed:<input [(ngModel)]="plantGeneratorSeed" placeholder="seed"/></label>
                 </div>
@@ -13,8 +13,14 @@
                 <button (click)="updatePlant()" class="btn btn-primary">Update Plant</button>
                 <button (click)="newSpecies()" class="btn btn-danger">New Species</button>
                 <button (click)="onGrow()" class="btn btn-success">Grow Plant</button>  
+                <button (click)="addLeaves()" class="btn btn-success">Add Leaves</button> 
             </div>
         </div>
+        <div id="season">
+                <button (click)="setFall()" class="btn btn-warning">Fall</button>
+                <button (click)="setWinter()" class="btn btn-primary">Winter</button>
+                <button (click)="setSummer()" class="btn btn-danger">Summer</button>
+            </div>
     </div>
     <canvas #canvas></canvas>
 </div>
