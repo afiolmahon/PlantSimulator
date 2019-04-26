@@ -51,7 +51,6 @@ export class PlantNode {
         sideBranchMesh.translateY((sideBranchLength / 2) + radMin);
         branch.add(sideBranchMesh);
         // Add leaf
-<<<<<<< HEAD
             for(var j = 3; j > 0; j--){ //Depth of the branch
             for (var i = 0; i < 8 ; i++) { //Rotation around the branch
                 let leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor(this.Fall));
@@ -72,11 +71,10 @@ export class PlantNode {
         sideBranchMesh.rotateOnAxis(Y_AXIS, this.rng.next() * (Math.PI / 2));
         // Connect
         branch.add(sideBranchMesh);
-=======
+        /*
         const leaf = this.LeafGen.makeLeafMesh();
         leaf.scale.set(0.1, 0.1, 0.1);
-        sideBranchMesh.add(leaf);
->>>>>>> 0e1a84288097282b584e19560179d2e6f31fb0b0
+        sideBranchMesh.add(leaf);*/
     }
 
     /**
