@@ -50,7 +50,7 @@ function getBranchLength(baseRadius: number[], ptype: number, r: Prando): number
  * @param ptype parent type
  * @param rand random value for choosing between possible transitions
  */
-export function getTypeTransition(ptype: number, rng: Prando): number {
+function getTypeTransition(ptype: number, rng: Prando): number {
     const rand = rng.next();
     if (ptype == PTYPE.ROOT) {
         if (rand <= 0.33) {
@@ -102,16 +102,22 @@ export class BranchGene {
     public minRadius = 0.2;
     public baseRadius = [1, 5];
     public branchOdds: number;
+    public rng: Prando;
 
     constructor(public seed: number, public ptype: number) {
         this.seed = seed;
-        const r: Prando = new Prando(this.seed);
-        this.branchOdds = getBranchOdds(ptype, r)
-        this.length = getBranchLength(this.baseRadius, ptype, r);
+        this.rng = new Prando(this.seed);
+        this.branchOdds = getBranchOdds(ptype, this.rng)
+        this.length = getBranchLength(this.baseRadius, ptype, this.rng);
         // Generate branch angle away from parent
         const angleMin = Math.PI / 16;
-        const angleMax = angleMin + (Math.PI / 4 * r.next());
+        const angleMax = angleMin + (Math.PI / 4 * this.rng.next());
         this.parentAngle = [angleMin, angleMax];
+    }
+
+    getDescendant(): BranchGene {
+        const newType = getTypeTransition(this.ptype, this.rng);
+        return new BranchGene(this.seed, newType);
     }
 }
 
