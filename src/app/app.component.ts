@@ -1,7 +1,7 @@
 import { Component, ElementRef, Input, ViewChild, OnInit } from '@angular/core';
 import * as THREE from 'three';
 import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBufferGeometry, PointLight, Vector3 } from 'three';
-import { BranchGene, LeafGene } from './Gene';
+import { BranchGene, LeafGene, PTYPE } from './Gene';
 import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
 import { X_AXIS } from './utility';
@@ -40,7 +40,7 @@ export class AppComponent implements OnInit {
   private cameraRotationX: number = -Math.PI / 2;
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
-  private plantGene = new BranchGene(1);
+  private plantGene = new BranchGene(1, PTYPE.ROOT);
 
   private animationTimer = 0;
 
@@ -135,7 +135,7 @@ export class AppComponent implements OnInit {
 
   newSpecies() {
     const seed = Math.random() * 100;
-    this.plantGene = new BranchGene(seed);
+    this.plantGene = new BranchGene(seed, PTYPE.ROOT);
     this.updatePlant();
     console.log('New Plant Generator!');
   }

@@ -2,11 +2,13 @@ import { Mesh, Color, MeshStandardMaterial, CylinderBufferGeometry, SphereBuffer
 import Prando from 'prando';
 import { Z_AXIS, Y_AXIS, inRange } from './utility';
 import { LeafNode } from './Leaf';
-import { BranchGene, LeafGene} from './Gene';
+import { BranchGene, LeafGene, getTypeTransition} from './Gene';
 import { BufferGeometry } from 'three';
 
 const RAD_SEGMENTS = 20;
 const HEIGHT_SEGMENTS = 1;
+
+
 
 /**
  * Plant Graph Data Structure
@@ -109,7 +111,8 @@ export class PlantNode {
     addChildNode(yRot: number): void {
         const topRadius = this.radius[1] * inRange(this.rng.next(), this.gene.reduction);
         // Create & add to parent node
-        const n = new PlantNode(this.gene, this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length);
+        const newGene = new BranchGene(this.gene.seed, getTypeTransition(this.gene.ptype, this.rng));
+        const n = new PlantNode(newGene, this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length);
         // Add side twig and leaf
         if (this.rng.next() >= 0.5) {
             this.addSideBranch(n.branchMesh, length, this.radius[1]);
