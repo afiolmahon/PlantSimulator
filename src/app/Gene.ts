@@ -8,39 +8,30 @@ export const PTYPE = {
     GRASS: 3,
     BRANCH_LONG: 4,
     BRANCH_SHORT: 5
-}
-
-// Describes transitions between the symbols of the language
-export const TREE_LANG = {
-
-}
+};
 
 function getBranchOdds(ptype: number, r: Prando): number {
     const rand = r.next();
-    if (ptype == PTYPE.GRASS) {
-        console.log("grass!");
+    if (ptype === PTYPE.GRASS) {
         return 0.0;
-    } else if (ptype == PTYPE.SHURB_TRUNK) {
-        console.log("shrub!");
-
+    } else if (ptype === PTYPE.SHURB_TRUNK) {
         return 0.7 * (rand * 0.3);
     } else {
-        console.log("default!");
         const base = 0.2;
-        return base + (rand * (1 - base)); 
+        return base + (rand * (1 - base));
     }
 }
 
 function getBranchLength(baseRadius: number[], ptype: number, r: Prando): number[] {
-    var radRadio = [1, 1];
-    if (ptype == PTYPE.BRANCH_LONG) {
-        radRadio = [3, 3];
-    } else if (ptype == PTYPE.BRANCH_SHORT) {
-        radRadio = [1, 2];
+    let radRatio = [1, 1];
+    if (ptype === PTYPE.BRANCH_LONG) {
+        radRatio = [3, 3];
+    } else if (ptype === PTYPE.BRANCH_SHORT) {
+        radRatio = [1, 2];
     } else {
-        radRadio = [1,6]
+        radRatio = [1, 6];
     }
-    const lengthMin = baseRadius[0] * (radRadio[0] + (radRadio[1] * r.next()));
+    const lengthMin = baseRadius[0] * (radRatio[0] + (radRatio[1] * r.next()));
     const lengthMax = lengthMin + (4 * r.next());
     return [lengthMin, lengthMax];
 }
@@ -52,7 +43,7 @@ function getBranchLength(baseRadius: number[], ptype: number, r: Prando): number
  */
 function getTypeTransition(ptype: number, rng: Prando): number {
     const rand = rng.next();
-    if (ptype == PTYPE.ROOT) {
+    if (ptype === PTYPE.ROOT) {
         if (rand <= 0.33) {
             return PTYPE.GRASS;
         } else if (rand <= 0.66) {
@@ -60,13 +51,13 @@ function getTypeTransition(ptype: number, rng: Prando): number {
         } else {
             return PTYPE.SHURB_TRUNK;
         }
-    } else if (ptype == PTYPE.SHURB_TRUNK) {
+    } else if (ptype === PTYPE.SHURB_TRUNK) {
         if (rand <= 0.5) {
             return PTYPE.SHURB_TRUNK;
         } else {
             return PTYPE.BRANCH_SHORT;
         }
-    } else if (ptype == PTYPE.TALL_TRUNK) {
+    } else if (ptype === PTYPE.TALL_TRUNK) {
         if (rand <= 0.5) {
             return PTYPE.TALL_TRUNK;
         } else if (rand <= 0.75) {
@@ -74,15 +65,15 @@ function getTypeTransition(ptype: number, rng: Prando): number {
         } else {
             return PTYPE.BRANCH_SHORT;
         }
-    } else if (ptype == PTYPE.GRASS) {
+    } else if (ptype === PTYPE.GRASS) {
         return PTYPE.GRASS;
-    } else if (ptype == PTYPE.BRANCH_LONG) {
+    } else if (ptype === PTYPE.BRANCH_LONG) {
         if (rand <= 0.8) {
             return PTYPE.BRANCH_LONG;
         } else {
             return PTYPE.BRANCH_SHORT;
         }
-    } else if (ptype == PTYPE.BRANCH_SHORT) {
+    } else if (ptype === PTYPE.BRANCH_SHORT) {
         return PTYPE.BRANCH_SHORT;
     } else {
         return PTYPE.ROOT;
@@ -107,7 +98,7 @@ export class BranchGene {
     constructor(public seed: number, public ptype: number) {
         this.seed = seed;
         this.rng = new Prando(this.seed);
-        this.branchOdds = getBranchOdds(ptype, this.rng)
+        this.branchOdds = getBranchOdds(ptype, this.rng);
         this.length = getBranchLength(this.baseRadius, ptype, this.rng);
         // Generate branch angle away from parent
         const angleMin = Math.PI / 16;
@@ -121,7 +112,7 @@ export class BranchGene {
     }
 }
 
-export class LeafGene{
+export class LeafGene {
 
     colorR: number[] = [0.6, 0.8];
     colorG: number[] = [0.2, 0.6];
