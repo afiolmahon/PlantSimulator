@@ -4,7 +4,7 @@ import { AmbientLight, Mesh, MeshLambertMaterial, PerspectiveCamera, PlaneBuffer
 import { BranchGene, LeafGene, PTYPE } from './Gene';
 import { PlantNode, createNewPlant } from './Plant';
 import { OrbitControls } from 'three-orbitcontrols-ts';
-import { X_AXIS } from './utility';
+import { X_AXIS, randomInt } from './utility';
 import Prando from 'prando';
 import { BoxBufferGeometry } from 'three';
 
@@ -21,7 +21,6 @@ export class AppComponent implements OnInit {
     private Fall: LeafGene = new LeafGene([0.8, 1.0], [0.2, 0.6], [0.0, 0.4]);
     private Winter: LeafGene = new LeafGene([0.0, 0.2], [0.4, 0.8], [0.8, 1.0]);
     private Summer: LeafGene = new LeafGene([0.7, 1.0], [1.0, 1.0], [0.0, 0.0]);
-
     private Season: LeafGene = this.Fall;
 
 
@@ -40,12 +39,16 @@ export class AppComponent implements OnInit {
   private cameraRotationX: number = -Math.PI / 2;
   private cameraPoint: Vector3 = new Vector3(0, 40, -40); // orbit center for camera
 
-  private plantGene = new BranchGene(1, PTYPE.ROOT);
 
   private animationTimer = 0;
 
-  constructor() {
-  }
+  // Generator Seed
+  @Input() public speciesSeed = 1;
+  @Input() public   plantSeed = 1;
+
+  private plantGene = new BranchGene(this.speciesSeed, PTYPE.ROOT);
+
+  constructor() {}
 
   private get canvas(): HTMLCanvasElement { return this.canvasRef.nativeElement; }
 
@@ -112,13 +115,10 @@ export class AppComponent implements OnInit {
     this.scene.add(newPlant.branchMesh);
   }
 
-
   /**
    * Button interactions
    */
-
   updatePlant() { // Rebuild plant reflecting any changes to generator
-   // this.removeLeaves();
     // Get save important old plant params
     const plantWidth = this.plant.radius[0];
     const age = this.plant.age;
@@ -134,8 +134,8 @@ export class AppComponent implements OnInit {
   }
 
   newSpecies() {
-    const seed = Math.random() * 100;
-    this.plantGene = new BranchGene(seed, PTYPE.ROOT);
+    this.speciesSeed = randomInt();
+    this.plantGene = new BranchGene(this.speciesSeed, PTYPE.ROOT);
     this.updatePlant();
     console.log('New Plant Generator!');
   }
@@ -147,8 +147,8 @@ export class AppComponent implements OnInit {
 
   generateNewPlant() {
     // Regen plant
-    const rng = new Prando(Math.random() * 100000);
-    const newPlant = createNewPlant(this.plantGene, 2, rng);
+    this.plantSeed = randomInt();
+    const newPlant = createNewPlant(this.plantGene, 2, new Prando(this.plantSeed));
     this.replacePlant(newPlant);
     for (let i = 0; i < 10; ++i) {
       this.plant.grow();
@@ -156,26 +156,25 @@ export class AppComponent implements OnInit {
     console.log('Generated new Plant!');
   }
 
-  addLeaves(){
+  addLeaves() {
     this.removeLeaves();
     this.plant.addLeavesToAll(this.Season);
   }
-  removeLeaves(){
+  removeLeaves() {
     this.plant.removeLeaves();
     this.updatePlant();
   }
-  setFall(){
+  setFall() {
     this.removeLeaves();
     this.Season = this.Fall;
     this.addLeaves();
-
   }
-  setWinter(){
+  setWinter() {
     this.removeLeaves();
     this.Season = this.Winter;
     this.addLeaves();
   }
-  setSummer(){
+  setSummer() {
     this.removeLeaves();
     this.Season = this.Summer;
     this.addLeaves();
@@ -190,9 +189,6 @@ export class AppComponent implements OnInit {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.camera.updateProjectionMatrix();
   }
-  onMouseMove(e: MouseEvent) {}
-  onMouseUp(_: Event) {}
-  onMouseDown(_: Event) {}
   onScroll(e: WheelEvent) {
     this.scene.translateZ(e.deltaY * 0.05);
   }

@@ -12,3 +12,10 @@ export const Z_AXIS: Vector3 = new Vector3(0, 0, 1);
 export function inRange(position: number, range: number[]): number {
     return range[0] + ( (range[1] - range[0]) * position);
 }
+
+/**
+ * Generate a large random integer
+ */
+export function randomInt(): number {
+    return Math.floor(Math.random() * 100000);
+}
