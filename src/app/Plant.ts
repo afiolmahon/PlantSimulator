@@ -8,14 +8,10 @@ import { BufferGeometry } from 'three';
 const RAD_SEGMENTS = 20;
 const HEIGHT_SEGMENTS = 1;
 
-
-
 /**
  * Plant Graph Data Structure
  */
 export class PlantNode {
-    //private LeafGen: LeafNode = new LeafNode();
-
     public children: PlantNode[] = [];
     public childrenL: LeafNode[] = [];
     public age = 0; // track growth cycles
@@ -29,9 +25,9 @@ export class PlantNode {
     private geo: BufferGeometry[] = [];
 
     constructor(public gene: BranchGene, public depth: number, public rng: Prando,
-                public radius: number[], public yRot: number, public parentLength: number) {
+                public radius: number[], public yRot: number, public parentLength: number, public branchColor: Color) {
         this.length = inRange(rng.next(), this.gene.length);
-        this.branchMesh = this.makeBranchMesh(radius, this.length, 'root');
+        this.branchMesh = this.makeBranchMesh(radius, this.length, 'root', this.branchColor);
     }
 
     /**
@@ -43,39 +39,35 @@ export class PlantNode {
         this.children.forEach(e => e.dispose());
         this.childrenL.forEach(e => e.dispose());
     }
-    removeLeaves(){
+    removeLeaves() {
         if (this.children.length > 0) {
             this.children.forEach(e => e.removeLeaves());
-            this.childrenL.forEach(e=>e.dispose());
+            this.childrenL.forEach(e => e.dispose());
         } else { // At the end of a plant
-            this.childrenL.forEach(e=>e.dispose());
+            this.childrenL.forEach(e => e.dispose());
         }
     }
-    addLeavesToAll(season: LeafGene){
+    addLeavesToAll(season: LeafGene) {
         if (this.children.length > 0) {
             this.children.forEach(e => e.addLeavesToAll(season));
             this.branchMesh = this.addLeafToBranch(this.branchMesh, this.length, 6, 12, season);
         } else { // At the end of a plant
-            if(this.childrenL.length == 0)
+            if (this.childrenL.length === 0) {
                 this.branchMesh = this.addLeafToBranch(this.branchMesh, this.length, 6, 12, season);
+            }
         }
-       // this.branchMesh = this.addLeafToBranch(this.branchMesh, this.length, 6, 12, this.Fall);
     }
-    addLeafToBranch(branch: Mesh, branchLength: number, branchDepth: number, amountLeaves: number, season: LeafGene) : Mesh{
-        // Add leaf
-            for(var j = branchLength-1, k = 0; j > -branchLength+1; j--, k++){ //Depth of the branch
-            for (var i = 0; i < amountLeaves ; i++) { //Rotation around the branch
-                let leaf = new LeafNode(this.generateLeafColor(season), 'leaf');
- 
-                //Tip of branch
-                    //leaf.translateY(sideBranchLength - .4);
+
+    addLeafToBranch(branch: Mesh, branchLength: number, branchDepth: number, amountLeaves: number, season: LeafGene): Mesh {
+        for (let j = branchLength - 1, k = 0; j > -branchLength + 1; j--, k++) { // Depth of the branch
+            for (let i = 0; i < amountLeaves ; i++) { // Rotation around the branch
+                const leaf = new LeafNode(this.generateLeafColor(season), 'leaf');
+                // Tip of branch
                 leaf.leafMesh.translateY(j * 0.65);
                 leaf.leafMesh.rotateZ((i * this.rng.next(-16, 16)));
-                leaf.leafMesh.rotateY((i * this.rng.next(-16, 16)));   
-
+                leaf.leafMesh.rotateY((i * this.rng.next(-16, 16)));
                 leaf.leafMesh.position.setX(leaf.leafMesh.position.x * (k * 0.08));
                 leaf.leafMesh.position.setZ(leaf.leafMesh.position.z * (k * 0.08));
-
                 branch.add(leaf.leafMesh);
                 this.childrenL.push(leaf);
             }
@@ -84,7 +76,7 @@ export class PlantNode {
     }
     addSideBranch(branch: Mesh, length: number, radMin: number): void {
         const sideBranchLength = (length / 1.5) * this.rng.next();
-        var sideBranchMesh = this.makeBranchMesh([radMin / 4, 0.08], sideBranchLength, 'side_branch');
+        const sideBranchMesh = this.makeBranchMesh([radMin / 4, 0.08], sideBranchLength, 'side_branch', this.branchColor);
         // Attach side branch
         sideBranchMesh.rotateZ(Math.PI / 2);
         // sideBranchMesh.rotateY(this.rng.next() * (Math.PI / 2));
@@ -99,7 +91,7 @@ export class PlantNode {
         sideBranchMesh.rotateOnAxis(Y_AXIS, this.rng.next() * (Math.PI / 2));
         // Connect
         branch.add(sideBranchMesh);
-        
+
       /*  const leaf = this.LeafGen.makeLeafMesh(this.generateLeafColor(this.Fall));
         leaf.scale.set(0.1, 0.1, 0.1);
         sideBranchMesh.add(leaf);*/
@@ -111,10 +103,11 @@ export class PlantNode {
     addChildNode(yRot: number): void {
         const topRadius = this.radius[1] * inRange(this.rng.next(), this.gene.reduction);
         // Create & add to parent node
-        const n = new PlantNode(this.gene.getDescendant(), this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length);
+        const n = new PlantNode(this.gene.getDescendant(), this.depth + 1, this.rng, [this.radius[1], topRadius], yRot, this.length,
+        this.branchColor);
         // Add side twig and leaf
         if (this.rng.next() >= 0.5) {
-            this.addSideBranch(n.branchMesh, length, this.radius[1]);
+            this.addSideBranch(n.branchMesh, length, this.radius[1], );
         }
         // Position & connect to graph
         n.branchMesh.rotateY((Math.PI / 2) - (0.2 * this.rng.next()));
@@ -125,9 +118,9 @@ export class PlantNode {
         this.children.push(n);
     }
 
-    makeBranchMesh(radius: number[], length: number, name: string): Mesh {
+    makeBranchMesh(radius: number[], length: number, name: string, branchColor: Color): Mesh {
         // Allocate Resources
-        const mat = new MeshStandardMaterial({ color: this.generatePlantColor(), flatShading: false });
+        const mat = new MeshStandardMaterial({ color: branchColor, flatShading: false });
         const geometryBranch = new CylinderBufferGeometry(radius[1], radius[0], length, RAD_SEGMENTS, HEIGHT_SEGMENTS, false);
         const geometryBranchTop = new SphereBufferGeometry(radius[1], RAD_SEGMENTS);
         this.mat.push(mat);
@@ -161,15 +154,10 @@ export class PlantNode {
         }
     }
 
-    generatePlantColor(): Color {
-        return new Color(inRange(this.rng.next(), this.gene.colorR),
-                         inRange(this.rng.next(), this.gene.colorG),
-                         inRange(this.rng.next(), this.gene.colorB));
-    }
-    generateLeafColor(season: LeafGene): Color{
+    generateLeafColor(season: LeafGene): Color {
         return new Color(inRange(this.rng.next(), season.colorR),
                          inRange(this.rng.next(), season.colorG),
-                         inRange(this.rng.next(), season.colorB));   
+                         inRange(this.rng.next(), season.colorB));
     }
 
     animate(timer: number) {
@@ -183,6 +171,12 @@ export class PlantNode {
     }
 }
 
+export function generatePlantColor(rng: Prando, gene: BranchGene): Color {
+    return new Color(inRange(rng.next(), gene.colorR),
+                     inRange(rng.next(), gene.colorG),
+                     inRange(rng.next(), gene.colorB));
+}
+
 /**
  * Create a new trunk PlantNode
  * @param bottomRadius: radius of plant trunk
@@ -190,8 +184,9 @@ export class PlantNode {
 export function createNewPlant(gene: BranchGene, bottomRadius: number, rng: Prando): PlantNode {
     // Create root node for tree
     const topRadius = bottomRadius - inRange(rng.next(), [0.3, 0.5]);
-    const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius], 0, 0);
-    n.branchMesh.translateZ(n.length / 2);          // Adjust Position
-    n.branchMesh.rotateX(Math.PI / 2);              // Set plant upright
+    const branchColor = generatePlantColor(rng, gene);
+    const n = new PlantNode(gene, 0, rng, [bottomRadius, topRadius], 0, 0, branchColor);
+    n.branchMesh.translateZ(n.length / 2); // Adjust Position
+    n.branchMesh.rotateX(Math.PI / 2);     // Set plant upright
     return n;
 }
